@@ -1,0 +1,37 @@
+# ============================================
+# Travel AI Agent - Requirements
+# ============================================
+
+# 핵심 AI 및 환경 설정
+# ============================================
+openai>=1.50.0                    # OpenAI API (GPT-4o)
+python-dotenv>=1.0.0              # 환경 변수 관리 (.env 파일)
+
+# 데이터 검증 및 구조화
+# ============================================
+pydantic>=2.5.0                   # 데이터 모델 검증
+
+# PDF 파일 처리
+# ============================================
+PyPDF2>=3.0.0                     # PDF 텍스트 추출
+
+# 캘린더 및 일정 관리
+# ============================================
+icalendar>=5.0.11                 # ICS 캘린더 파일 생성
+python-dateutil>=2.8.2            # 날짜/시간 파싱 및 처리
+
+# Google Calendar API 연동 (선택사항)
+# ============================================
+google-auth>=2.25.0               # Google OAuth 인증
+google-auth-oauthlib>=1.2.0       # OAuth 플로우 처리
+google-auth-httplib2>=0.2.0       # HTTP 요청 처리
+google-api-python-client>=2.110.0 # Google Calendar API 클라이언트
+
+# ============================================
+# 설치 방법:
+# pip install -r requirements.txt
+#
+# 또는 개별 설치:
+# pip install openai python-dotenv pydantic PyPDF2 icalendar python-dateutil
+# pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+# ============================================
