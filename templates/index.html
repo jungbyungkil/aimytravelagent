@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Travel — 스마트 여행의 시작</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body style="font-family:'Noto Sans KR',sans-serif; background:#F4F6F9;">
+
+<!-- ═══════════════════════════════════════ HEADER ═══════════════════════════════════════ -->
+<header id="main-header" class="main-header">
+  <div class="header-inner">
+
+    <!-- Logo -->
+    <a href="/" class="brand-logo">
+      <span class="brand-plane">✈️</span>
+      <span class="brand-text">AI<span class="brand-travel">Travel</span></span>
+    </a>
+
+    <!-- Nav Links -->
+    <nav class="main-nav">
+      <button onclick="switchTab('flights')" class="nav-pill">✈️ 항공편</button>
+      <button onclick="switchTab('hotels')"  class="nav-pill">🏨 호텔</button>
+      <button onclick="switchTab('planner')" class="nav-pill">🤖 AI 플래너</button>
+      <button onclick="openBookingsModal()"  class="nav-pill nav-pill-booking">
+        📋 내 예약
+        <span id="booking-badge" class="hidden booking-badge">0</span>
+      </button>
+    </nav>
+
+    <!-- Right Actions -->
+    <div class="header-right">
+      <button onclick="openBookingsModal()" class="btn-header-ghost">
+        <span>📋</span><span>예약 확인</span>
+      </button>
+      <button onclick="toggleChat()" class="btn-header-ai">
+        <span>🤖</span><span class="hidden sm:inline">AI 상담</span>
+      </button>
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="mobile-menu-btn md:hidden">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden mobile-menu md:hidden">
+    <button onclick="switchTab('flights'); toggleMobileMenu()" class="mobile-nav-item">✈️ 항공편</button>
+    <button onclick="switchTab('hotels');  toggleMobileMenu()" class="mobile-nav-item">🏨 호텔</button>
+    <button onclick="switchTab('planner'); toggleMobileMenu()" class="mobile-nav-item">🤖 AI 플래너</button>
+    <button onclick="openBookingsModal();  toggleMobileMenu()" class="mobile-nav-item">📋 내 예약</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
+<section class="hero-section">
+  <!-- Background Image -->
+  <div class="hero-bg"></div>
+  <!-- Overlay -->
+  <div class="hero-overlay"></div>
+
+  <div class="hero-inner">
+    <!-- Heading -->
+    <div class="hero-text">
+      <span class="hero-badge">🤖 Claude AI 탑재 &nbsp;·&nbsp; 실시간 가격 비교</span>
+      <h1 class="hero-title">어디로 떠나실건가요?</h1>
+      <p class="hero-sub">AI가 당신만의 완벽한 여행을 설계합니다</p>
+    </div>
+
+    <!-- ── Search Card ── -->
+    <div class="search-card">
+
+      <!-- Tabs -->
+      <div class="search-tab-bar">
+        <button id="tab-flights" onclick="switchTab('flights')" class="tab-btn active">
+          <span class="tab-icon-wrap">✈️</span> 항공편
+        </button>
+        <button id="tab-hotels"  onclick="switchTab('hotels')"  class="tab-btn">
+          <span class="tab-icon-wrap">🏨</span> 호텔
+        </button>
+        <button id="tab-planner" onclick="switchTab('planner')" class="tab-btn">
+          <span class="tab-icon-wrap">🤖</span> AI 플래너
+        </button>
+      </div>
+
+      <!-- ── Flight Panel ── -->
+      <div id="panel-flights" class="search-panel p-5 md:p-6">
+        <div class="search-row">
+          <div class="search-field flex-grow-2">
+            <label class="field-label">출발지</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">🛫</span>
+              <input id="f-origin" type="text" placeholder="서울, 인천" value="서울" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <button class="swap-btn" onclick="swapFlightLocations()" title="출발/도착 교환">⇄</button>
+
+          <div class="search-field flex-grow-2">
+            <label class="field-label">도착지</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">🛬</span>
+              <input id="f-dest" type="text" placeholder="도쿄, 방콕, 파리…" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <div class="search-field">
+            <label class="field-label">출발일</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">📅</span>
+              <input id="f-date" type="date" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <div class="search-field">
+            <label class="field-label">인원 / 클래스</label>
+            <div class="flex gap-1.5">
+              <select id="f-pax" class="field-input flex-1 min-w-0">
+                <option value="1">1명</option>
+                <option value="2">2명</option>
+                <option value="3">3명</option>
+                <option value="4">4명</option>
+              </select>
+              <select id="f-cabin" class="field-input flex-1 min-w-0">
+                <option value="economy">이코노미</option>
+                <option value="premium_economy">프리미엄</option>
+                <option value="business">비즈니스</option>
+                <option value="first">퍼스트</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="search-field search-btn-wrap">
+            <button onclick="searchFlights()" class="search-submit-btn">
+              <span id="flight-btn-icon">🔍</span>
+              <span id="flight-btn-text">항공편 검색</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Hotel Panel ── -->
+      <div id="panel-hotels" class="search-panel hidden p-5 md:p-6">
+        <div class="search-row">
+          <div class="search-field" style="flex:2">
+            <label class="field-label">도시</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">🏙️</span>
+              <input id="h-city" type="text" placeholder="도쿄, 방콕, 발리, 제주…" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <div class="search-field">
+            <label class="field-label">체크인</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">📅</span>
+              <input id="h-checkin" type="date" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <div class="search-field">
+            <label class="field-label">체크아웃</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">📅</span>
+              <input id="h-checkout" type="date" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <div class="search-field search-btn-wrap">
+            <button onclick="searchHotels()" class="search-submit-btn">🔍 호텔 검색</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AI Planner Panel ── -->
+      <div id="panel-planner" class="search-panel hidden p-5 md:p-6">
+        <div class="search-row">
+          <div class="search-field flex-grow-2">
+            <label class="field-label">여행지</label>
+            <div class="field-icon-wrap">
+              <span class="field-icon">🗺️</span>
+              <input id="p-dest" type="text" placeholder="도쿄, 파리, 발리…" class="field-input field-input-icon" />
+            </div>
+          </div>
+
+          <div class="search-field">
+            <label class="field-label">여행 기간</label>
+            <select id="p-duration" class="field-input">
+              <option value="3">2박 3일</option>
+              <option value="4">3박 4일</option>
+              <option value="5">4박 5일</option>
+              <option value="7" selected>6박 7일</option>
+              <option value="10">9박 10일</option>
+              <option value="14">13박 14일</option>
+            </select>
+          </div>
+
+          <div class="search-field">
+            <label class="field-label">예산 수준</label>
+            <select id="p-budget" class="field-input">
+              <option value="budget">알뜰 여행</option>
+              <option value="medium" selected>중간 예산</option>
+              <option value="luxury">럭셔리</option>
+            </select>
+          </div>
+
+          <div class="search-field search-btn-wrap">
+            <button onclick="generateItinerary()" class="search-submit-btn planner-btn">
+              ✨ 일정 생성
+            </button>
+          </div>
+        </div>
+
+        <!-- Interest Tags -->
+        <div class="interest-row">
+          <span class="interest-label">관심사:</span>
+          <div class="flex flex-wrap gap-2" id="interest-tags">
+            <button class="interest-tag active" data-value="관광">🏛 관광</button>
+            <button class="interest-tag" data-value="음식">🍜 음식</button>
+            <button class="interest-tag" data-value="쇼핑">🛍 쇼핑</button>
+            <button class="interest-tag" data-value="자연">🌿 자연</button>
+            <button class="interest-tag" data-value="역사">📜 역사</button>
+            <button class="interest-tag" data-value="액티비티">🏄 액티비티</button>
+            <button class="interest-tag" data-value="예술">🎨 예술</button>
+            <button class="interest-tag" data-value="야경">🌃 야경</button>
+            <button class="interest-tag" data-value="온천">♨️ 온천</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /search-card -->
+
+    <!-- Trust Strip -->
+    <div class="trust-strip">
+      <div class="trust-item"><span class="trust-check">✓</span> 250만+ 여행객</div>
+      <div class="trust-dot"></div>
+      <div class="trust-item"><span class="trust-check">✓</span> 24/7 AI 지원</div>
+      <div class="trust-dot"></div>
+      <div class="trust-item"><span class="trust-check">✓</span> 최저가 보장</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ SEARCH RESULTS ═══════════════════════════════════════ -->
+<section id="results-section" class="hidden max-w-7xl mx-auto px-4 py-8">
+  <div class="results-header">
+    <div>
+      <h2 id="results-title" class="results-title"></h2>
+      <p id="results-subtitle" class="results-subtitle"></p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <span class="text-sm text-gray-500">정렬:</span>
+      <select id="sort-select" onchange="sortResults()" class="sort-select">
+        <option value="price">가격 낮은 순</option>
+        <option value="price_desc">가격 높은 순</option>
+        <option value="rating">평점 높은 순</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+  <div id="results-empty" class="hidden text-center py-20">
+    <div class="text-6xl mb-4">🔍</div>
+    <p class="text-gray-400 text-lg font-medium">검색 결과가 없습니다.</p>
+    <p class="text-gray-300 text-sm mt-1">다른 조건으로 다시 검색해보세요.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ TODAY'S DEALS ═══════════════════════════════════════ -->
+<section class="page-section">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">🔥 오늘의 특가</h2>
+      <p class="section-sub">한정 수량 · 지금 바로 예약하세요</p>
+    </div>
+    <button class="see-all-link">전체 보기 →</button>
+  </div>
+
+  <div class="deals-scroll">
+    <!-- Deal 1 -->
+    <div class="deal-card" onclick="quickFlightSearch('서울', '도쿄')">
+      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=80')"></div>
+      <div class="deal-overlay"></div>
+      <div class="deal-badge">BEST</div>
+      <div class="deal-info">
+        <div class="deal-city">도쿄</div>
+        <div class="deal-country">일본</div>
+        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩89,900~</span></div>
+      </div>
+    </div>
+    <!-- Deal 2 -->
+    <div class="deal-card" onclick="quickFlightSearch('서울', '방콕')">
+      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80')"></div>
+      <div class="deal-overlay"></div>
+      <div class="deal-badge deal-badge-hot">HOT</div>
+      <div class="deal-info">
+        <div class="deal-city">방콕</div>
+        <div class="deal-country">태국</div>
+        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩129,000~</span></div>
+      </div>
+    </div>
+    <!-- Deal 3 -->
+    <div class="deal-card" onclick="quickFlightSearch('서울', '발리')">
+      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=80')"></div>
+      <div class="deal-overlay"></div>
+      <div class="deal-badge deal-badge-new">NEW</div>
+      <div class="deal-info">
+        <div class="deal-city">발리</div>
+        <div class="deal-country">인도네시아</div>
+        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩245,000~</span></div>
+      </div>
+    </div>
+    <!-- Deal 4 -->
+    <div class="deal-card" onclick="quickFlightSearch('서울', '파리')">
+      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=80')"></div>
+      <div class="deal-overlay"></div>
+      <div class="deal-info">
+        <div class="deal-city">파리</div>
+        <div class="deal-country">프랑스</div>
+        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩689,000~</span></div>
+      </div>
+    </div>
+    <!-- Deal 5 -->
+    <div class="deal-card" onclick="quickFlightSearch('서울', '싱가포르')">
+      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&q=80')"></div>
+      <div class="deal-overlay"></div>
+      <div class="deal-badge deal-badge-sale">SALE</div>
+      <div class="deal-info">
+        <div class="deal-city">싱가포르</div>
+        <div class="deal-country">싱가포르</div>
+        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩189,000~</span></div>
+      </div>
+    </div>
+    <!-- Deal 6 -->
+    <div class="deal-card" onclick="quickSearch('제주')">
+      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=400&q=80')"></div>
+      <div class="deal-overlay"></div>
+      <div class="deal-badge">국내</div>
+      <div class="deal-info">
+        <div class="deal-city">제주</div>
+        <div class="deal-country">대한민국</div>
+        <div class="deal-price"><span class="deal-from">호텔</span> <span class="deal-amount">₩78,000~</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ POPULAR DESTINATIONS ═══════════════════════════════════════ -->
+<section class="page-section">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">🌍 인기 여행지</h2>
+      <p class="section-sub">지금 가장 뜨거운 목적지를 확인하세요</p>
+    </div>
+    <button class="see-all-link">전체 보기 →</button>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="destinations-grid">
+    <div class="col-span-4 text-center py-10 text-gray-300">
+      <div class="loader mx-auto mb-3"></div>
+      <p class="text-sm">목적지 로드 중…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ AI FEATURES ═══════════════════════════════════════ -->
+<section class="features-section">
+  <div class="features-inner">
+    <div class="features-head">
+      <h2 class="features-title">AI가 만드는 완벽한 여행</h2>
+      <p class="features-sub">Claude AI가 당신의 취향을 분석해 최적의 여행 계획을 세워드립니다</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card" onclick="switchTab('planner')">
+        <div class="feature-icon-wrap">🗺️</div>
+        <h3 class="feature-title">AI 맞춤 일정 생성</h3>
+        <p class="feature-desc">목적지·기간·관심사 입력만으로 완벽한 하루하루 일정을 자동 생성합니다</p>
+        <span class="feature-cta">지금 시작 →</span>
+      </div>
+      <div class="feature-card" onclick="toggleChat()">
+        <div class="feature-icon-wrap">💬</div>
+        <h3 class="feature-title">AI 여행 어시스턴트</h3>
+        <p class="feature-desc">24시간 언제든지 여행 관련 질문을 AI에게 물어보세요. 현지 정보부터 예산까지</p>
+        <span class="feature-cta">AI 상담 →</span>
+      </div>
+      <div class="feature-card" onclick="openBookingsModal()">
+        <div class="feature-icon-wrap">📋</div>
+        <h3 class="feature-title">스마트 예약 관리</h3>
+        <p class="feature-desc">항공편·호텔 예약을 한 곳에서 통합 관리하고 언제든 확인하세요</p>
+        <span class="feature-cta">예약 확인 →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ STATS STRIP ═══════════════════════════════════════ -->
+<section class="stats-section">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num">250만+</div>
+      <div class="stat-label">누적 여행객</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">180+</div>
+      <div class="stat-label">취항 목적지</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">4.9★</div>
+      <div class="stat-label">평균 만족도</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">AI 고객 지원</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">✈️ AI<span>Travel</span></div>
+      <p class="footer-tagline">Claude AI와 함께하는 스마트 여행의 시작</p>
+      <div class="footer-social">
+        <a href="#" class="social-btn">📘</a>
+        <a href="#" class="social-btn">📷</a>
+        <a href="#" class="social-btn">🐦</a>
+        <a href="#" class="social-btn">▶️</a>
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>서비스</h4>
+        <ul>
+          <li><a href="#" onclick="switchTab('flights');return false;">항공편 검색</a></li>
+          <li><a href="#" onclick="switchTab('hotels');return false;">호텔 검색</a></li>
+          <li><a href="#" onclick="switchTab('planner');return false;">AI 일정 플래너</a></li>
+          <li><a href="#" onclick="openBookingsModal();return false;">예약 관리</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>고객 지원</h4>
+        <ul>
+          <li><a href="#">예약 조회</a></li>
+          <li><a href="#">취소 / 환불</a></li>
+          <li><a href="#">자주 묻는 질문</a></li>
+          <li><a href="#">1:1 문의</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>여행 정보</h4>
+        <ul>
+          <li><a href="#">인기 여행지</a></li>
+          <li><a href="#">여행 꿀팁</a></li>
+          <li><a href="#">비자 정보</a></li>
+          <li><a href="#">여행 보험</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>회사 정보</h4>
+        <ul>
+          <li><a href="#">회사 소개</a></li>
+          <li><a href="#">이용약관</a></li>
+          <li><a href="#">개인정보처리방침</a></li>
+          <li><a href="#">파트너십</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 AI Travel. All rights reserved.</p>
+    <p>Powered by <span>Claude AI (Anthropic)</span></p>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════ AI CHAT WIDGET ═══════════════════════════════════════ -->
+<div id="chat-widget" class="chat-widget">
+  <!-- Panel -->
+  <div id="chat-panel" class="hidden chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <p class="chat-name">AI 여행 어시스턴트</p>
+          <p class="chat-status"><span class="online-dot"></span>Claude AI · 24시간 운영</p>
+        </div>
+      </div>
+      <button onclick="toggleChat()" class="chat-close">✕</button>
+    </div>
+
+    <div id="chat-messages" class="chat-messages">
+      <div class="chat-msg assistant">
+        <div class="chat-bubble assistant-bubble">
+          안녕하세요! 👋 저는 AI 여행 어시스턴트입니다.<br/>
+          어떤 여행을 계획하고 계신가요? 목적지 추천, 일정 계획, 현지 정보 등 무엇이든 물어보세요! ✈️
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-quick-btns">
+      <button class="quick-btn" onclick="sendQuickMsg('도쿄 3박 4일 추천 코스 알려줘')">🗼 도쿄 코스</button>
+      <button class="quick-btn" onclick="sendQuickMsg('방콕 맛집 추천해줘')">🍜 방콕 맛집</button>
+      <button class="quick-btn" onclick="sendQuickMsg('허니문 여행지 추천해줘')">💑 허니문</button>
+      <button class="quick-btn" onclick="sendQuickMsg('여름 유럽 여행 팁 알려줘')">🌍 유럽 팁</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input id="chat-input" type="text" placeholder="여행 질문을 입력하세요…"
+        class="chat-input"
+        onkeydown="if(event.key==='Enter') sendChat()" />
+      <button onclick="sendChat()" id="chat-send-btn" class="chat-send-btn">전송</button>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button onclick="toggleChat()" id="chat-fab" class="chat-fab">
+    <span class="chat-fab-icon">🤖</span>
+    <span class="chat-fab-pulse"></span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════ BOOKINGS MODAL ═══════════════════════════════════════ -->
+<div id="bookings-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeBookingsModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">📋 내 예약 목록</h2>
+      <button onclick="closeBookingsModal()" class="modal-close">✕</button>
+    </div>
+    <div id="bookings-list" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ ITINERARY MODAL ═══════════════════════════════════════ -->
+<div id="itinerary-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeItineraryModal()">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 id="itinerary-title" class="modal-title">🗺️ AI 여행 일정</h2>
+      <div class="flex gap-2 items-center">
+        <button onclick="window.print()" class="btn-print">🖨️ 인쇄</button>
+        <button onclick="closeItineraryModal()" class="modal-close">✕</button>
+      </div>
+    </div>
+    <div id="itinerary-content" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ LOADING OVERLAY ═══════════════════════════════════════ -->
+<div id="loading-overlay" class="hidden fixed inset-0 bg-black/40 z-[60] flex items-center justify-center backdrop-blur-sm">
+  <div class="loading-box">
+    <div class="loader mx-auto mb-4"></div>
+    <p id="loading-text" class="loading-text">처리 중…</p>
+    <p class="loading-sub">잠시만 기다려주세요</p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden toast"></div>
+
+<script src="/static/js/app.js"></script>
+<script>
+// ── Header scroll effect ──────────────────
+const mainHeader = document.getElementById('main-header');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 60) {
+    mainHeader.classList.add('scrolled');
+  } else {
+    mainHeader.classList.remove('scrolled');
+  }
+}, { passive: true });
+
+// ── Mobile menu toggle ────────────────────
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+}
+
+// ── Swap flight locations ─────────────────
+function swapFlightLocations() {
+  const origin = document.getElementById('f-origin');
+  const dest   = document.getElementById('f-dest');
+  if (!origin || !dest) return;
+  [origin.value, dest.value] = [dest.value, origin.value];
+  origin.classList.add('swap-flash');
+  dest.classList.add('swap-flash');
+  setTimeout(() => {
+    origin.classList.remove('swap-flash');
+    dest.classList.remove('swap-flash');
+  }, 400);
+}
+
+// ── Quick Flight Search (from deal cards) ──
+function quickFlightSearch(origin, dest) {
+  document.getElementById('f-origin').value = origin;
+  document.getElementById('f-dest').value   = dest;
+  switchTab('flights');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(searchFlights, 600);
+}
+</script>
+</body>
+</html>

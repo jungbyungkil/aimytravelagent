@@ -1,0 +1,26 @@
+[
+  {
+    "id": "9054952E",
+    "type": "flight",
+    "item_id": "TEST001",
+    "details": {
+      "airline": "대한항공"
+    },
+    "price": 403400.0,
+    "currency": "KRW",
+    "status": "confirmed",
+    "created_at": "2026-05-26T22:20:42.464475"
+  },
+  {
+    "id": "D45D0223",
+    "type": "hotel",
+    "item_id": "HTL001",
+    "details": {
+      "name": "마리나베이샌즈"
+    },
+    "price": 750000.0,
+    "currency": "KRW",
+    "status": "confirmed",
+    "created_at": "2026-05-26T22:23:52.623903"
+  }
+]
