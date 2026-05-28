@@ -80,7 +80,7 @@ async def chat(req: ChatRequest):
     try:
         client = get_client()
 
-        messages = [{role: system, content: TRAVEL_SYSTEM_PROMPT}]
+        messages = [{"role": "system", "content": TRAVEL_SYSTEM_PROMPT}]
         for msg in req.history:
             if msg.get("role") in ("user", "assistant"):
                 messages.append({"role": msg["role"], "content": msg["content"]})
