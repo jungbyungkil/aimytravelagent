@@ -663,3 +663,246 @@ function showToast(msg, ms = 3500) {
 }
 
 // (escJSON 제거: 인덱스 기반 예약으로 대체)
+
+
+// ═════════════════════════════════════════
+// AI 여행지 추천
+// ═════════════════════════════════════════
+
+// 빠른 예시 채우기
+const AI_EXAMPLES = {
+  'family-winter': {
+    party:  '4인 가족 — 초등 6학년 여아(만13세), 3학년 남아(만9세), 어른 2명',
+    period: '12월 말(12/26~) 또는 2027년 1월, 겨울방학 기간',
+    pref:   '아이들이 즐길 수 있는 테마파크·자연·문화 체험, 안전한 여행지 선호',
+  },
+  'couple-fall': {
+    party:  '신혼부부 2명',
+    period: '10월 중순 ~ 11월 초, 7박 8일',
+    pref:   '로맨틱한 분위기, 좋은 호텔, 맛집 투어',
+  },
+  'friends-summer': {
+    party:  '20대 친구 3명',
+    period: '7월 말 ~ 8월 초, 5박 6일',
+    pref:   '바다·해변, 액티비티, 나이트라이프, 저예산',
+  },
+  'solo-spring': {
+    party:  '혼자 여행 (30대 여성)',
+    period: '3월 말 ~ 4월 초, 4박 5일',
+    pref:   '안전한 여행지, 카페·문화·예술, 힐링',
+  },
+};
+
+function fillAIExample(key) {
+  const ex = AI_EXAMPLES[key];
+  if (!ex) return;
+  document.getElementById('ai-party').value  = ex.party;
+  document.getElementById('ai-period').value = ex.period;
+  document.getElementById('ai-pref').value   = ex.pref;
+}
+
+async function recommendDestinations() {
+  const party  = document.getElementById('ai-party')?.value?.trim();
+  const period = document.getElementById('ai-period')?.value?.trim();
+  const pref   = document.getElementById('ai-pref')?.value?.trim();
+  const budget = document.getElementById('ai-budget')?.value || 'medium';
+
+  if (!party)  { showToast('⚠️ 여행 인원/구성을 입력해주세요.'); return; }
+  if (!period) { showToast('⚠️ 여행 시기를 입력해주세요.'); return; }
+
+  // 버튼 로딩 상태
+  const btn  = document.getElementById('ai-recommend-btn');
+  const icon = document.getElementById('ai-btn-icon');
+  const txt  = document.getElementById('ai-btn-text');
+  btn.disabled = true;
+  icon.textContent = '⏳';
+  txt.textContent  = 'AI 분석 중…';
+
+  showLoading('✨ AI가 최적의 여행지를 찾고 있습니다…');
+
+  try {
+    const res  = await fetch('/api/ai/recommend-destinations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ travel_party: party, travel_period: period,
+                             preferences: pref, budget_level: budget }),
+    });
+    const data = await res.json();
+    hideLoading();
+
+    if (data.success && data.data) {
+      renderAIDestinations(data.data, party, period);
+    } else {
+      showToast(`❌ ${data.error || '추천 생성에 실패했습니다.'}`);
+    }
+  } catch (e) {
+    hideLoading();
+    showToast('❌ 서버 연결 오류가 발생했습니다.');
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '✨';
+    txt.textContent  = 'AI 추천 받기';
+  }
+}
+
+// 도시별 대표 이미지 (Unsplash)
+const DEST_IMAGES = {
+  '도쿄': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&q=80',
+  '오사카': 'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=600&q=80',
+  '방콕': 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=600&q=80',
+  '발리': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80',
+  '싱가포르': 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80',
+  '홍콩': 'https://images.unsplash.com/photo-1474531210469-f91a11c06991?w=600&q=80',
+  '파리': 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600&q=80',
+  '런던': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&q=80',
+  '뉴욕': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80',
+  '하와이': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
+  '제주': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=600&q=80',
+  '다낭': 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80',
+  '세부': 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=600&q=80',
+  '두바이': 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80',
+  '바르셀로나': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=600&q=80',
+  '로마': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600&q=80',
+  '괌': 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80',
+  '사이판': 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80',
+  '푸켓': 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80',
+  '코타키나발루': 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=600&q=80',
+};
+
+function getDestImage(city) {
+  for (const [key, url] of Object.entries(DEST_IMAGES)) {
+    if (city.includes(key) || key.includes(city)) return url;
+  }
+  return 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&q=80';
+}
+
+function renderAIDestinations(data, party, period) {
+  const section  = document.getElementById('ai-results-section');
+  const grid     = document.getElementById('ai-dest-grid');
+  const summary  = document.getElementById('ai-summary-box');
+  const subtitle = document.getElementById('ai-results-subtitle');
+
+  // 요약 박스
+  if (data.summary) {
+    summary.textContent = `🤖 ${data.summary}`;
+    summary.classList.remove('hidden');
+  }
+  subtitle.textContent = `${party} · ${period}`;
+
+  const dests = data.destinations || [];
+
+  grid.innerHTML = dests.map((d, i) => {
+    const imgUrl   = getDestImage(d.city);
+    const isTop    = d.rank === 1;
+    const rankLabel = isTop ? '🏆 1위 추천' : `${d.rank}위 추천`;
+    const rankClass = isTop ? 'gold' : '';
+    const budgetInfo = d.budget || {};
+
+    // 날짜 옵션
+    const datesHtml = (d.best_dates || []).map(dt => `
+      <div class="ai-dest-date-item">
+        <div class="ai-dest-date-period">📅 ${dt.period}</div>
+        <div class="ai-dest-date-pros">✅ ${dt.pros}</div>
+        ${dt.cons ? `<div class="ai-dest-date-cons">⚠️ ${dt.cons}</div>` : ''}
+      </div>
+    `).join('');
+
+    // 예산
+    const budgetHtml = `
+      <div class="ai-dest-budget-grid">
+        <div class="ai-dest-budget-item">
+          <label>✈️ 항공권 (1인)</label>
+          <span>₩${fmtNum(budgetInfo.flight_per_person)}</span>
+        </div>
+        <div class="ai-dest-budget-item">
+          <label>🏨 호텔 (1박)</label>
+          <span>₩${fmtNum(budgetInfo.hotel_per_night)}</span>
+        </div>
+        <div class="ai-dest-budget-item">
+          <label>🍽 현지 경비 (1일)</label>
+          <span>₩${fmtNum(budgetInfo.daily_expense)}</span>
+        </div>
+        <div class="ai-dest-budget-item">
+          <label>예산 등급</label>
+          <span>${budgetInfo.budget_grade || '-'}</span>
+        </div>
+      </div>
+      <div class="ai-dest-budget-total">
+        <span>전체 예상 비용</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <strong>₩${fmtNum(budgetInfo.total_estimate)}</strong>
+          <span class="ai-dest-budget-grade">${budgetInfo.budget_grade || ''}</span>
+        </div>
+      </div>
+    `;
+
+    const kidsScore = d.kids_friendly_score || 70;
+
+    return `
+      <div class="ai-dest-card ${isTop ? 'rank-1' : ''}" style="animation-delay:${i * 0.12}s">
+        <div class="ai-dest-img-wrap">
+          <img src="${imgUrl}" alt="${d.city}" loading="lazy" />
+          <div class="ai-dest-img-overlay"></div>
+          <span class="ai-dest-rank-badge ${rankClass}">${rankLabel}</span>
+          <div class="ai-dest-img-bottom">
+            <div class="ai-dest-city">${d.emoji || ''} ${d.city}</div>
+            <div class="ai-dest-country">${d.country}</div>
+          </div>
+        </div>
+
+        <div class="ai-dest-body">
+          <div class="ai-dest-tagline">${d.tagline || ''}</div>
+
+          <!-- 추천 이유 -->
+          <div class="ai-dest-section-title">추천 이유</div>
+          <ul class="ai-dest-reasons">
+            ${(d.reasons || []).map(r => `<li>${r}</li>`).join('')}
+          </ul>
+
+          <!-- 가족 특화 포인트 -->
+          ${(d.family_highlights || []).length ? `
+          <div class="ai-dest-section-title">👨‍👩‍👧‍👦 가족 포인트</div>
+          <ul class="ai-dest-reasons" style="margin-bottom:14px">
+            ${d.family_highlights.map(h => `<li style="color:#0E72CC">${h}</li>`).join('')}
+          </ul>` : ''}
+
+          <!-- 날짜 옵션 -->
+          <div class="ai-dest-section-title">📅 추천 날짜</div>
+          <div class="ai-dest-dates">${datesHtml}</div>
+
+          <!-- 예산 -->
+          <div class="ai-dest-section-title">💰 예상 예산</div>
+          <div class="ai-dest-budget">${budgetHtml}</div>
+
+          <!-- 아이 친화도 -->
+          <div class="ai-dest-kids-score">
+            <span class="ai-dest-kids-label">👧 아이 친화도</span>
+            <div class="ai-dest-kids-bar">
+              <div class="ai-dest-kids-fill" style="width:${kidsScore}%"></div>
+            </div>
+            <span class="ai-dest-kids-num">${kidsScore}</span>
+          </div>
+
+          <!-- CTA -->
+          <button class="ai-dest-cta-btn"
+            onclick="startPlanFromRecommend('${d.city}')">
+            🗺️ ${d.city} 일정 만들기
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  section.classList.remove('hidden');
+  setTimeout(() => {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// 추천 결과에서 바로 AI 플래너로 연결
+function startPlanFromRecommend(city) {
+  document.getElementById('p-dest').value = city;
+  switchTab('planner');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast(`✨ ${city} 선택! 일정을 생성해보세요.`);
+}

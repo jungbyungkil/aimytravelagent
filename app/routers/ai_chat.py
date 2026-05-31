@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter
 from openai import OpenAI
-from app.models import ChatRequest, ItineraryRequest
+from app.models import ChatRequest, ItineraryRequest, DestinationRecommendRequest
 import json
 
 router = APIRouter()
@@ -193,3 +193,78 @@ async def recommend_destination(req: ChatRequest):
         return {"response": response.choices[0].message.content, "success": True}
     except Exception as e:
         return {"success": False, "error": str(e), "response": None}
+
+
+DESTINATION_RECOMMEND_SYSTEM_PROMPT = """당신은 세계 최고의 가족 여행 전문가입니다.
+여행자의 구성원, 여행 시기, 예산을 분석하여 최적의 여행지 3곳을 JSON으로 추천합니다.
+
+반드시 아래 JSON 구조로만 응답하세요 (다른 텍스트 없이 순수 JSON만):
+{
+  "summary": "여행자 분석 요약 (1-2문장)",
+  "destinations": [
+    {
+      "rank": 1,
+      "city": "도시명",
+      "country": "나라명",
+      "emoji": "대표 이모지",
+      "tagline": "한 줄 매력 포인트",
+      "reasons": ["추천 이유1", "추천 이유2", "추천 이유3"],
+      "family_highlights": ["가족 특화 포인트1", "가족 특화 포인트2"],
+      "best_dates": [
+        {"period": "12월 말 (예: 12/26~1/2)", "pros": "이 시기 장점", "cons": "단점 또는 주의사항"},
+        {"period": "1월 초 (예: 1/10~1/17)", "pros": "이 시기 장점", "cons": "단점 또는 주의사항"}
+      ],
+      "budget": {
+        "flight_per_person": "항공권 1인 예상 (KRW, 숫자만)",
+        "hotel_per_night": "호텔 1박 예상 (KRW, 숫자만, 방 기준)",
+        "daily_expense": "1일 현지 경비 예상 (KRW, 전체 가족)",
+        "total_estimate": "총 여행 예상 비용 (KRW, 전체 가족)",
+        "budget_grade": "알뜰|보통|럭셔리"
+      },
+      "weather": "해당 시기 날씨 정보",
+      "kids_friendly_score": 85,
+      "tips": ["꿀팁1", "꿀팁2"]
+    }
+  ]
+}"""
+
+
+@router.post("/recommend-destinations")
+async def recommend_destinations(req: DestinationRecommendRequest):
+    """가족/그룹 맞춤 여행지 3곳 추천 (구조화 JSON)"""
+    try:
+        client = get_client()
+
+        prompt = f"""여행자 정보:
+- 구성원: {req.travel_party}
+- 여행 희망 시기: {req.travel_period}
+- 선호/기타: {req.preferences or '특별한 선호 없음'}
+- 예산 수준: {req.budget_level}
+
+위 조건에 맞는 최적의 여행지 3곳을 추천해주세요.
+아이들 나이와 가족 구성을 특히 고려하여, 아이들이 즐길 수 있는 액티비티와 안전성도 반영해주세요.
+각 여행지별로 사용자가 언급한 시기(12월 말 / 1월 / 11월 등)에 맞는 구체적인 날짜 옵션 2개를 제안하세요."""
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            max_tokens=3000,
+            messages=[
+                {"role": "system", "content": DESTINATION_RECOMMEND_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+        )
+
+        raw = response.choices[0].message.content.strip()
+        if raw.startswith("```"):
+            lines = raw.split("\n")
+            raw = "\n".join(lines[1:-1] if lines[-1] == "```" else lines[1:])
+
+        result = json.loads(raw)
+        return {"success": True, "data": result}
+
+    except json.JSONDecodeError:
+        return {"success": False, "error": "AI 응답 파싱 오류", "data": None}
+    except ValueError as e:
+        return {"success": False, "error": str(e), "data": None}
+    except Exception as e:
+        return {"success": False, "error": f"추천 생성 실패: {str(e)}", "data": None}

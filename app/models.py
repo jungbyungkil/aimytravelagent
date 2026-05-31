@@ -32,6 +32,13 @@ class ItineraryRequest(BaseModel):
     budget: str = "medium"
 
 
+class DestinationRecommendRequest(BaseModel):
+    travel_party: str
+    travel_period: str
+    preferences: str = ""
+    budget_level: str = "medium"
+
+
 class BookingCreate(BaseModel):
     type: str          # "flight" | "hotel"
     item_id: str
