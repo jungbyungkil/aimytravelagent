@@ -646,7 +646,11 @@ async function openBookingsModal() {
 function closeBookingsModal() { document.getElementById('bookings-modal').classList.add('hidden'); }
 
 // ── Utilities ──────────────────────────
-function fmtNum(n) { return Number(n || 0).toLocaleString('ko-KR'); }
+function fmtNum(n) {
+  if (n === null || n === undefined || n === '') return '0';
+  const num = typeof n === 'number' ? n : Number(String(n).replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(num) ? num.toLocaleString('ko-KR') : '0';
+}
 
 function showLoading(text = '처리 중…') {
   document.getElementById('loading-text').textContent = text;
@@ -838,6 +842,61 @@ function renderAIDestinations(data, party, period) {
 
     const kidsScore = d.kids_friendly_score || 70;
 
+    // ── 항공편 상세 ─
+    const flight = d.flight || {};
+    const flightHtml = (flight.airline || flight.route) ? `
+      <div class="ai-dest-section-title">✈️ 항공편</div>
+      <div class="ai-dest-info-card">
+        <div class="ai-dest-info-head">
+          <span class="ai-dest-info-name">${flight.airline || '항공편'}</span>
+          ${flight.type ? `<span class="ai-dest-info-tag">${flight.type}</span>` : ''}
+        </div>
+        <div class="ai-dest-info-route">
+          <span>${flight.route || '-'}</span>
+          ${flight.duration ? `<span class="ai-dest-info-sub">⏱ ${flight.duration}</span>` : ''}
+        </div>
+        <div class="ai-dest-info-price">
+          <span>1인 왕복</span><strong>₩${fmtNum(flight.price_per_person)}</strong>
+        </div>
+      </div>
+    ` : '';
+
+    // ── 호텔 상세 ─
+    const hotel = d.hotel || {};
+    const hotelFeatures = (hotel.features || []).map(f =>
+      `<span class="ai-dest-chip">${f}</span>`).join('');
+    const hotelHtml = (hotel.name || hotel.price_per_night) ? `
+      <div class="ai-dest-section-title">🏨 추천 호텔</div>
+      <div class="ai-dest-info-card">
+        <div class="ai-dest-info-head">
+          <span class="ai-dest-info-name">${hotel.name || '추천 호텔'}</span>
+          ${hotel.grade ? `<span class="ai-dest-info-tag">${hotel.grade}</span>` : ''}
+        </div>
+        ${hotel.area ? `<div class="ai-dest-info-sub">📍 ${hotel.area}</div>` : ''}
+        ${hotelFeatures ? `<div class="ai-dest-chips">${hotelFeatures}</div>` : ''}
+        <div class="ai-dest-info-price">
+          <span>1박</span><strong>₩${fmtNum(hotel.price_per_night)}</strong>
+        </div>
+      </div>
+    ` : '';
+
+    // ── 인기 장소 & 가격 ─
+    const attractions = d.attractions || [];
+    const attractionsHtml = attractions.length ? `
+      <div class="ai-dest-section-title">🎡 인기 장소 & 가격</div>
+      <div class="ai-dest-attractions">
+        ${attractions.map(a => `
+          <div class="ai-dest-attraction">
+            <div class="ai-dest-attraction-info">
+              <span class="ai-dest-attraction-name">${a.emoji || '📍'} ${a.name}</span>
+              ${a.price_note ? `<span class="ai-dest-attraction-note">${a.price_note}</span>` : ''}
+            </div>
+            <span class="ai-dest-attraction-price">₩${fmtNum(a.price)}</span>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
     return `
       <div class="ai-dest-card ${isTop ? 'rank-1' : ''}" style="animation-delay:${i * 0.12}s">
         <div class="ai-dest-img-wrap">
@@ -865,6 +924,15 @@ function renderAIDestinations(data, party, period) {
           <ul class="ai-dest-reasons" style="margin-bottom:14px">
             ${d.family_highlights.map(h => `<li style="color:#0E72CC">${h}</li>`).join('')}
           </ul>` : ''}
+
+          <!-- 항공편 -->
+          ${flightHtml}
+
+          <!-- 호텔 -->
+          ${hotelHtml}
+
+          <!-- 인기 장소 -->
+          ${attractionsHtml}
 
           <!-- 날짜 옵션 -->
           <div class="ai-dest-section-title">📅 추천 날짜</div>
