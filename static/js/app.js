@@ -12,6 +12,7 @@ const state = {
   chatOpen: false,
   bookings: [],
   resultType: null,  // 'flight' | 'hotel'
+  recommendations: [],
 };
 
 // ── Initialize ─────────────────────────
@@ -19,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setDefaultDates();
   setupInterestTags();
   loadBookings();
-  loadDestinations();
 
   // Backdrop clicks to close modals
   document.getElementById('bookings-modal')?.addEventListener('click', e => {
@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('itinerary-modal')?.addEventListener('click', e => {
     if (e.target.id === 'itinerary-modal') closeItineraryModal();
+  });
+  document.getElementById('search-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'search-modal') closeSearchModal();
   });
 });
 
@@ -50,13 +53,37 @@ function setupInterestTags() {
 }
 
 // ── Tab Switching ──────────────────────
+const TAB_TITLES = { flights: '✈️ 항공편 검색', hotels: '🏨 호텔 검색', planner: '🤖 AI 일정 플래너' };
+
 function switchTab(tab) {
   state.currentTab = tab;
   ['flights', 'hotels', 'planner'].forEach(t => {
     document.getElementById(`panel-${t}`)?.classList.toggle('hidden', t !== tab);
     document.getElementById(`tab-${t}`)?.classList.toggle('active', t === tab);
   });
-  document.querySelector('.search-card')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const titleEl = document.getElementById('search-modal-title');
+  if (titleEl) titleEl.textContent = TAB_TITLES[tab] || '🔎 검색';
+}
+
+// ── Search Modal (팝업) ─────────────────
+function openSearchModal(tab = 'flights', opts = {}) {
+  switchTab(tab);
+  // 추천 카드에서 넘어온 목적지/도시 프리필
+  if (opts.destination) {
+    const fd = document.getElementById('f-dest');   if (fd) fd.value = opts.destination;
+    const hc = document.getElementById('h-city');   if (hc) hc.value = opts.destination;
+    const pd = document.getElementById('p-dest');   if (pd) pd.value = opts.destination;
+  }
+  // 이전 검색 결과 감추기
+  document.getElementById('results-section')?.classList.add('hidden');
+  const modal = document.getElementById('search-modal');
+  modal?.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSearchModal() {
+  document.getElementById('search-modal')?.classList.add('hidden');
+  document.body.style.overflow = '';
 }
 
 // ── Load Destinations ──────────────────
@@ -446,86 +473,128 @@ function renderItinerary(itin) {
   document.getElementById('itinerary-title').textContent =
     `🗺️ ${itin.title || itin.destination + ' 여행 일정'}`;
 
+  const fs = itin.flight_summary || null;
+  const hs = itin.hotel_summary || null;
+
+  // ── 상단 요약 바 ─
   let html = `
-    <div class="bg-blue-50 rounded-xl p-5 mb-6">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div><div class="text-2xl mb-1">📍</div><div class="font-bold text-gray-800">${itin.destination}</div><div class="text-xs text-gray-500">목적지</div></div>
-        <div><div class="text-2xl mb-1">🗓️</div><div class="font-bold text-gray-800">${itin.duration}일</div><div class="text-xs text-gray-500">여행 기간</div></div>
-        <div><div class="text-2xl mb-1">💰</div><div class="font-bold text-gray-800">${itin.budget_level || '중간'}</div><div class="text-xs text-gray-500">예산 수준</div></div>
-        <div><div class="text-2xl mb-1">💳</div><div class="font-bold text-blue-600 text-sm">${itin.total_estimated_cost || '-'}</div><div class="text-xs text-gray-500">총 예상 비용</div></div>
-      </div>
+    <div class="itin-doc">
+    <div class="itin-summary">
+      <div class="itin-summary-item"><span class="itin-summary-ico">📍</span><div><div class="itin-summary-val">${itin.destination || '-'}</div><div class="itin-summary-key">목적지</div></div></div>
+      <div class="itin-summary-item"><span class="itin-summary-ico">🗓️</span><div><div class="itin-summary-val">${(itin.duration || (itin.days||[]).length)}일</div><div class="itin-summary-key">여행 기간</div></div></div>
+      <div class="itin-summary-item"><span class="itin-summary-ico">💰</span><div><div class="itin-summary-val">${itin.budget_level || '중간'}</div><div class="itin-summary-key">예산 수준</div></div></div>
+      <div class="itin-summary-item"><span class="itin-summary-ico">💳</span><div><div class="itin-summary-val itin-cost">${itin.total_estimated_cost || '-'}</div><div class="itin-summary-key">총 예상 비용</div></div></div>
     </div>
   `;
 
+  // ── 항공 / 호텔 요약 카드 ─
+  if (fs || hs) {
+    html += `<div class="itin-cards">`;
+    if (fs) {
+      const ob = fs.outbound || {}, ib = fs.inbound || {};
+      html += `
+        <div class="itin-card itin-card-flight">
+          <div class="itin-card-head">✈️ 항공편 <span>${fs.airline || ''}</span></div>
+          ${ob.route ? `
+          <div class="itin-leg">
+            <span class="itin-leg-tag">가는 편</span>
+            <div class="itin-leg-route">${ob.route}</div>
+            <div class="itin-leg-time"><strong>${ob.depart || ''}</strong> → <strong>${ob.arrive || ''}</strong></div>
+            ${ob.duration ? `<div class="itin-leg-dur">⏱ ${ob.duration}</div>` : ''}
+          </div>` : ''}
+          ${ib.route ? `
+          <div class="itin-leg">
+            <span class="itin-leg-tag">오는 편</span>
+            <div class="itin-leg-route">${ib.route}</div>
+            <div class="itin-leg-time"><strong>${ib.depart || ''}</strong> → <strong>${ib.arrive || ''}</strong></div>
+            ${ib.duration ? `<div class="itin-leg-dur">⏱ ${ib.duration}</div>` : ''}
+          </div>` : ''}
+        </div>`;
+    }
+    if (hs) {
+      html += `
+        <div class="itin-card itin-card-hotel">
+          <div class="itin-card-head">🏨 숙소 <span>${hs.grade || ''}</span></div>
+          <div class="itin-hotel-name">${hs.name || '추천 호텔'}</div>
+          ${hs.area ? `<div class="itin-hotel-area">📍 ${hs.area}</div>` : ''}
+          <div class="itin-hotel-times">
+            <div><span>체크인</span><strong>${hs.check_in || '15:00'}</strong></div>
+            <div><span>체크아웃</span><strong>${hs.check_out || '11:00'}</strong></div>
+            ${hs.nights ? `<div><span>숙박</span><strong>${hs.nights}박</strong></div>` : ''}
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // ── 하이라이트 ─
   if (itin.highlights?.length) {
-    html += `<div class="mb-6"><h3 class="font-bold text-gray-700 mb-3">✨ 하이라이트</h3><div class="flex flex-wrap gap-2">
-      ${itin.highlights.map(h => `<span class="bg-orange-50 text-orange-600 border border-orange-200 px-3 py-1 rounded-full text-sm font-medium">${h}</span>`).join('')}
+    html += `<div class="itin-highlights"><h3>✨ 하이라이트</h3><div class="itin-chips">
+      ${itin.highlights.map(h => `<span class="itin-chip">${h}</span>`).join('')}
     </div></div>`;
   }
 
+  // ── 일자별 타임라인 ─
+  const typeIcon = {
+    '항공': '✈️', '숙박': '🏨', '체크인': '🔑', '체크아웃': '🧳',
+    '관광': '📷', '식사': '🍽', '교통': '🚌', '쇼핑': '🛍', '액티비티': '🏄', '예술': '🎨', '야경': '🌃',
+  };
+
   (itin.days || []).forEach(day => {
     html += `
-      <div class="day-card">
-        <div class="day-header">
-          <div class="flex items-center justify-between">
-            <div>
-              <span class="text-sm opacity-80 block">Day ${day.day}</span>
-              <h3 class="font-bold text-lg">${day.title || day.day + '일차'}</h3>
-            </div>
-            <div class="text-right text-sm opacity-80">
-              <div>${day.theme || ''}</div>
-              <div class="font-semibold">${day.estimated_cost || ''}</div>
-            </div>
+      <div class="itin-day">
+        <div class="itin-day-head">
+          <div class="itin-day-no">Day ${day.day}</div>
+          <div class="itin-day-meta">
+            <div class="itin-day-title">${day.title || day.day + '일차'}</div>
+            <div class="itin-day-sub">${day.date ? day.date + ' · ' : ''}${day.theme || ''}</div>
           </div>
+          ${day.estimated_cost ? `<div class="itin-day-cost">${day.estimated_cost}</div>` : ''}
         </div>
-        ${(day.activities || []).map(act => `
-          <div class="activity-item">
-            <span class="activity-time">${act.time || ''}</span>
-            <div class="flex-1">
-              <div class="flex items-center gap-2 flex-wrap mb-1">
-                <span class="font-semibold text-gray-800 text-sm">${act.title}</span>
-                <span class="activity-type-badge type-${act.type || '관광'}">${act.type || '관광'}</span>
+        <div class="itin-timeline">
+          ${(day.activities || []).map(act => {
+            const t = act.type || '관광';
+            return `
+            <div class="itin-tl-item type-${t}">
+              <div class="itin-tl-time">${act.time || ''}</div>
+              <div class="itin-tl-dot"><span>${typeIcon[t] || '📍'}</span></div>
+              <div class="itin-tl-body">
+                <div class="itin-tl-title">${act.title || ''} <span class="itin-tl-badge">${t}</span></div>
+                ${act.description ? `<div class="itin-tl-desc">${act.description}</div>` : ''}
+                <div class="itin-tl-meta">
+                  ${act.duration ? `<span>⏱ ${act.duration}</span>` : ''}
+                  ${act.cost ? `<span>💰 ${act.cost}</span>` : ''}
+                  ${act.tips ? `<span class="itin-tl-tip">💡 ${act.tips}</span>` : ''}
+                </div>
               </div>
-              <p class="text-gray-600 text-xs mb-1">${act.description || ''}</p>
-              <div class="flex gap-3 text-xs text-gray-400 flex-wrap">
-                ${act.duration ? `<span>⏱ ${act.duration}</span>` : ''}
-                ${act.cost ? `<span>💰 ${act.cost}</span>` : ''}
-                ${act.tips ? `<span class="text-blue-500">💡 ${act.tips}</span>` : ''}
-              </div>
-            </div>
-          </div>
-        `).join('')}
+            </div>`;
+          }).join('')}
+        </div>
         ${day.meals ? `
-          <div class="px-5 py-3 bg-orange-50 border-t border-orange-100">
-            <span class="text-xs font-bold text-orange-600 uppercase tracking-wide">추천 식사</span>
-            <div class="flex gap-4 mt-1 text-xs text-gray-600 flex-wrap">
-              ${day.meals.breakfast ? `<span>🌅 조식: ${day.meals.breakfast}</span>` : ''}
-              ${day.meals.lunch     ? `<span>☀️ 중식: ${day.meals.lunch}</span>`     : ''}
-              ${day.meals.dinner    ? `<span>🌙 석식: ${day.meals.dinner}</span>`    : ''}
-            </div>
-          </div>
-        ` : ''}
+          <div class="itin-meals">
+            <span class="itin-meals-label">🍴 추천 식사</span>
+            ${day.meals.breakfast ? `<span>🌅 ${day.meals.breakfast}</span>` : ''}
+            ${day.meals.lunch     ? `<span>☀️ ${day.meals.lunch}</span>`     : ''}
+            ${day.meals.dinner    ? `<span>🌙 ${day.meals.dinner}</span>`    : ''}
+          </div>` : ''}
       </div>
     `;
   });
 
+  // ── 꿀팁 / 시기 / 날씨 ─
   if (itin.travel_tips?.length) {
-    html += `
-      <div class="mt-6 bg-blue-50 rounded-xl p-5">
-        <h3 class="font-bold text-blue-800 mb-3">💡 여행 꿀팁</h3>
-        <ul class="space-y-2">
-          ${itin.travel_tips.map(t => `<li class="flex items-start gap-2 text-sm text-blue-700"><span>•</span><span>${t}</span></li>`).join('')}
-        </ul>
-      </div>
-    `;
+    html += `<div class="itin-tips"><h3>💡 여행 꿀팁</h3><ul>
+      ${itin.travel_tips.map(t => `<li>${t}</li>`).join('')}
+    </ul></div>`;
   }
-
   if (itin.best_time_to_visit || itin.weather_info) {
-    html += `<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-      ${itin.best_time_to_visit ? `<div class="bg-green-50 rounded-xl p-4"><h4 class="font-bold text-green-700 mb-1">📅 최적 여행 시기</h4><p class="text-sm text-green-600">${itin.best_time_to_visit}</p></div>` : ''}
-      ${itin.weather_info       ? `<div class="bg-sky-50 rounded-xl p-4"><h4 class="font-bold text-sky-700 mb-1">🌤 날씨 정보</h4><p class="text-sm text-sky-600">${itin.weather_info}</p></div>` : ''}
+    html += `<div class="itin-foot-grid">
+      ${itin.best_time_to_visit ? `<div class="itin-foot-box best"><h4>📅 최적 여행 시기</h4><p>${itin.best_time_to_visit}</p></div>` : ''}
+      ${itin.weather_info       ? `<div class="itin-foot-box weather"><h4>🌤 날씨 정보</h4><p>${itin.weather_info}</p></div>` : ''}
     </div>`;
   }
+
+  html += `</div>`;  // /itin-doc
 
   document.getElementById('itinerary-content').innerHTML = html;
   document.getElementById('itinerary-modal').classList.remove('hidden');
@@ -794,6 +863,7 @@ function renderAIDestinations(data, party, period) {
   subtitle.textContent = `${party} · ${period}`;
 
   const dests = data.destinations || [];
+  state.recommendations = dests;  // "일정 만들기"에서 항공/호텔 참조용
 
   grid.innerHTML = dests.map((d, i) => {
     const imgUrl   = getDestImage(d.city);
@@ -801,6 +871,7 @@ function renderAIDestinations(data, party, period) {
     const rankLabel = isTop ? '🏆 1위 추천' : `${d.rank}위 추천`;
     const rankClass = isTop ? 'gold' : '';
     const budgetInfo = d.budget || {};
+    const cityArg = (d.city || '').replace(/'/g, "\\'");
 
     // 날짜 옵션
     const datesHtml = (d.best_dates || []).map(dt => `
@@ -811,15 +882,17 @@ function renderAIDestinations(data, party, period) {
       </div>
     `).join('');
 
-    // 예산
+    // 예산 (항공권·호텔 항목 클릭 → 검색 팝업)
     const budgetHtml = `
       <div class="ai-dest-budget-grid">
-        <div class="ai-dest-budget-item">
-          <label>✈️ 항공권 (1인)</label>
+        <div class="ai-dest-budget-item clickable" title="항공편 검색"
+          onclick="openSearchModal('flights', { destination: '${cityArg}' })">
+          <label>✈️ 항공권 (1인) <span class="ai-dest-search-hint">검색 →</span></label>
           <span>₩${fmtNum(budgetInfo.flight_per_person)}</span>
         </div>
-        <div class="ai-dest-budget-item">
-          <label>🏨 호텔 (1박)</label>
+        <div class="ai-dest-budget-item clickable" title="호텔 검색"
+          onclick="openSearchModal('hotels', { destination: '${cityArg}' })">
+          <label>🏨 호텔 (1박) <span class="ai-dest-search-hint">검색 →</span></label>
           <span>₩${fmtNum(budgetInfo.hotel_per_night)}</span>
         </div>
         <div class="ai-dest-budget-item">
@@ -842,11 +915,12 @@ function renderAIDestinations(data, party, period) {
 
     const kidsScore = d.kids_friendly_score || 70;
 
-    // ── 항공편 상세 ─
+    // ── 항공편 상세 (클릭 → 항공 검색 팝업) ─
     const flight = d.flight || {};
     const flightHtml = (flight.airline || flight.route) ? `
       <div class="ai-dest-section-title">✈️ 항공편</div>
-      <div class="ai-dest-info-card">
+      <div class="ai-dest-info-card clickable" title="항공편 검색"
+        onclick="openSearchModal('flights', { destination: '${cityArg}' })">
         <div class="ai-dest-info-head">
           <span class="ai-dest-info-name">${flight.airline || '항공편'}</span>
           ${flight.type ? `<span class="ai-dest-info-tag">${flight.type}</span>` : ''}
@@ -856,18 +930,19 @@ function renderAIDestinations(data, party, period) {
           ${flight.duration ? `<span class="ai-dest-info-sub">⏱ ${flight.duration}</span>` : ''}
         </div>
         <div class="ai-dest-info-price">
-          <span>1인 왕복</span><strong>₩${fmtNum(flight.price_per_person)}</strong>
+          <span>1인 왕복 <span class="ai-dest-search-hint">· 검색 →</span></span><strong>₩${fmtNum(flight.price_per_person)}</strong>
         </div>
       </div>
     ` : '';
 
-    // ── 호텔 상세 ─
+    // ── 호텔 상세 (클릭 → 호텔 검색 팝업) ─
     const hotel = d.hotel || {};
     const hotelFeatures = (hotel.features || []).map(f =>
       `<span class="ai-dest-chip">${f}</span>`).join('');
     const hotelHtml = (hotel.name || hotel.price_per_night) ? `
       <div class="ai-dest-section-title">🏨 추천 호텔</div>
-      <div class="ai-dest-info-card">
+      <div class="ai-dest-info-card clickable" title="호텔 검색"
+        onclick="openSearchModal('hotels', { destination: '${cityArg}' })">
         <div class="ai-dest-info-head">
           <span class="ai-dest-info-name">${hotel.name || '추천 호텔'}</span>
           ${hotel.grade ? `<span class="ai-dest-info-tag">${hotel.grade}</span>` : ''}
@@ -875,7 +950,7 @@ function renderAIDestinations(data, party, period) {
         ${hotel.area ? `<div class="ai-dest-info-sub">📍 ${hotel.area}</div>` : ''}
         ${hotelFeatures ? `<div class="ai-dest-chips">${hotelFeatures}</div>` : ''}
         <div class="ai-dest-info-price">
-          <span>1박</span><strong>₩${fmtNum(hotel.price_per_night)}</strong>
+          <span>1박 <span class="ai-dest-search-hint">· 검색 →</span></span><strong>₩${fmtNum(hotel.price_per_night)}</strong>
         </div>
       </div>
     ` : '';
@@ -967,10 +1042,40 @@ function renderAIDestinations(data, party, period) {
   }, 100);
 }
 
-// 추천 결과에서 바로 AI 플래너로 연결
-function startPlanFromRecommend(city) {
-  document.getElementById('p-dest').value = city;
-  switchTab('planner');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast(`✨ ${city} 선택! 일정을 생성해보세요.`);
+// 추천 결과에서 바로 AI 일정 생성 (항공·호텔 정보 참조, 3박4일)
+async function startPlanFromRecommend(city) {
+  const rec = (state.recommendations || []).find(r => r.city === city) || {};
+  const interests = ['관광', '음식'];  // 추천 기반 기본 관심사
+  const duration = 4;  // 3박 4일
+  const today = new Date().toISOString().split('T')[0];
+
+  showLoading(`🤖 ${city} 3박 4일 일정을 항공·호텔 정보와 함께 만드는 중…`);
+
+  try {
+    const res = await fetch('/api/ai/itinerary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        destination: city,
+        duration_days: duration,
+        start_date: today,
+        interests,
+        budget: (rec.budget && rec.budget.budget_grade === '럭셔리') ? 'luxury'
+              : (rec.budget && rec.budget.budget_grade === '알뜰') ? 'budget' : 'medium',
+        flight: rec.flight || null,
+        hotel: rec.hotel || null,
+        traveler: document.getElementById('ai-party')?.value?.trim() || '',
+      }),
+    });
+    const data = await res.json();
+    hideLoading();
+    if (data.success && data.itinerary) {
+      renderItinerary(data.itinerary);
+    } else {
+      showToast(`❌ ${data.error || '일정 생성에 실패했습니다.'}`);
+    }
+  } catch (e) {
+    hideLoading();
+    showToast('❌ 서버 연결 오류가 발생했습니다.');
+  }
 }
