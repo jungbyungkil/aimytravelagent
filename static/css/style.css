@@ -1810,11 +1810,120 @@ body {
 }
 
 /* ══════════════════════════════════════════
+   추천 카드: 클릭 가능한 항목 (검색 팝업 연결)
+══════════════════════════════════════════ */
+.ai-dest-budget-item.clickable,
+.ai-dest-info-card.clickable {
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.ai-dest-budget-item.clickable:hover {
+  background: #EFF6FF;
+  box-shadow: 0 0 0 2px var(--primary-light) inset;
+  border-radius: var(--r-sm);
+}
+.ai-dest-info-card.clickable:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.ai-dest-search-hint { font-size: 9.5px; color: var(--primary); font-weight: 700; }
+
+/* ══════════════════════════════════════════
+   일정 타임라인 (여행사 PDF 스타일)
+══════════════════════════════════════════ */
+.itin-doc { color: var(--text); }
+.itin-summary {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  background: linear-gradient(135deg, #EFF6FF, #F0FDF4);
+  border-radius: var(--r-lg); padding: 16px 18px; margin-bottom: 18px;
+}
+.itin-summary-item { display: flex; align-items: center; gap: 10px; }
+.itin-summary-ico { font-size: 22px; }
+.itin-summary-val { font-weight: 800; font-size: 15px; }
+.itin-summary-val.itin-cost { color: var(--primary); font-size: 14px; }
+.itin-summary-key { font-size: 11px; color: var(--text-muted); }
+
+.itin-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.itin-card { border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px; }
+.itin-card-flight { background: #F0F7FF; border-color: #DBEAFE; }
+.itin-card-hotel  { background: #FFF7ED; border-color: #FDE6CC; }
+.itin-card-head { font-size: 14px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.itin-card-head span { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.itin-leg { padding: 8px 0; border-top: 1px dashed #CFE0F5; }
+.itin-leg:first-of-type { border-top: none; }
+.itin-leg-tag { font-size: 10px; font-weight: 700; color: #2563EB; background: #DBEAFE; padding: 2px 7px; border-radius: var(--r-full); }
+.itin-leg-route { font-size: 13px; font-weight: 700; margin-top: 4px; }
+.itin-leg-time { font-size: 13px; margin-top: 2px; }
+.itin-leg-time strong { color: var(--text); }
+.itin-leg-dur { font-size: 11px; color: var(--text-muted); }
+.itin-hotel-name { font-size: 15px; font-weight: 800; }
+.itin-hotel-area { font-size: 12px; color: var(--text-muted); margin: 2px 0 8px; }
+.itin-hotel-times { display: flex; gap: 18px; }
+.itin-hotel-times div { display: flex; flex-direction: column; }
+.itin-hotel-times span { font-size: 10.5px; color: var(--text-muted); }
+.itin-hotel-times strong { font-size: 14px; color: #EA580C; }
+
+.itin-highlights { margin-bottom: 18px; }
+.itin-highlights h3 { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+.itin-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.itin-chip { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: var(--r-full); background: #FFF7ED; color: #EA580C; border: 1px solid #FDE6CC; }
+
+.itin-day { border: 1px solid var(--border); border-radius: var(--r-lg); margin-bottom: 16px; overflow: hidden; }
+.itin-day-head { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: linear-gradient(135deg, #1E3A8A, #2563EB); color: #fff; }
+.itin-day-no { font-size: 13px; font-weight: 800; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: var(--r-full); white-space: nowrap; }
+.itin-day-meta { flex: 1; }
+.itin-day-title { font-size: 16px; font-weight: 800; }
+.itin-day-sub { font-size: 12px; opacity: 0.85; }
+.itin-day-cost { font-size: 13px; font-weight: 700; }
+
+.itin-timeline { padding: 8px 18px 4px; }
+.itin-tl-item { display: grid; grid-template-columns: 56px 28px 1fr; gap: 8px; position: relative; padding-bottom: 14px; }
+.itin-tl-time { font-size: 12px; font-weight: 800; color: var(--primary); text-align: right; padding-top: 2px; }
+.itin-tl-dot { display: flex; flex-direction: column; align-items: center; }
+.itin-tl-dot span { width: 26px; height: 26px; border-radius: 50%; background: #EFF6FF; border: 2px solid var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 1; }
+.itin-tl-item:not(:last-child) .itin-tl-dot::after { content: ""; position: absolute; top: 26px; bottom: 0; width: 2px; background: var(--border); }
+.itin-tl-item.type-항공 .itin-tl-dot span,
+.itin-tl-item.type-체크인 .itin-tl-dot span,
+.itin-tl-item.type-체크아웃 .itin-tl-dot span,
+.itin-tl-item.type-숙박 .itin-tl-dot span { background: #FFF7ED; border-color: #FDBA74; }
+.itin-tl-body { padding-top: 1px; }
+.itin-tl-title { font-size: 13.5px; font-weight: 700; }
+.itin-tl-badge { font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg-soft, #F1F5F9); padding: 1px 7px; border-radius: var(--r-full); margin-left: 4px; }
+.itin-tl-desc { font-size: 12px; color: var(--text-muted); margin: 2px 0; line-height: 1.5; }
+.itin-tl-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: var(--text-muted); }
+.itin-tl-tip { color: var(--primary); }
+
+.itin-meals { display: flex; flex-wrap: wrap; gap: 14px; padding: 10px 18px; background: #FFFBEB; border-top: 1px solid #FDE6CC; font-size: 12px; color: #92400E; }
+.itin-meals-label { font-weight: 800; }
+.itin-tips { background: #EFF6FF; border-radius: var(--r-lg); padding: 16px 18px; margin-top: 18px; }
+.itin-tips h3 { font-size: 14px; font-weight: 800; color: #1E40AF; margin-bottom: 8px; }
+.itin-tips ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.itin-tips li { font-size: 13px; color: #1D4ED8; padding-left: 16px; position: relative; }
+.itin-tips li::before { content: "•"; position: absolute; left: 4px; }
+.itin-foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.itin-foot-box { border-radius: var(--r-lg); padding: 14px 16px; }
+.itin-foot-box h4 { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+.itin-foot-box p { font-size: 12.5px; line-height: 1.5; }
+.itin-foot-box.best { background: #F0FDF4; } .itin-foot-box.best h4 { color: #15803D; } .itin-foot-box.best p { color: #166534; }
+.itin-foot-box.weather { background: #F0F9FF; } .itin-foot-box.weather h4 { color: #0369A1; } .itin-foot-box.weather p { color: #075985; }
+
+@media (max-width: 640px) {
+  .itin-summary { grid-template-columns: repeat(2, 1fr); }
+  .itin-cards, .itin-foot-grid { grid-template-columns: 1fr; }
+  .itin-tl-item { grid-template-columns: 48px 24px 1fr; }
+}
+
+/* ══════════════════════════════════════════
    PRINT
 ══════════════════════════════════════════ */
 @media print {
-  header, footer, .chat-widget, #bookings-modal, .deals-section,
-  .stats-section, .features-section { display: none !important; }
-  #itinerary-modal { position: static; overflow: visible; }
-  .day-card { break-inside: avoid; }
+  header, footer, .chat-widget, #bookings-modal, #search-modal,
+  .hero-section, .stats-section { display: none !important; }
+  body { background: #fff !important; }
+  #itinerary-modal { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+  #itinerary-modal .modal-box { box-shadow: none !important; max-width: 100% !important; max-height: none !important; }
+  #itinerary-modal .modal-close, #itinerary-modal .btn-print { display: none !important; }
+  .itin-day, .itin-card, .itin-tl-item { break-inside: avoid; }
+  .itin-day-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
