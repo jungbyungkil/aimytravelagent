@@ -23,9 +23,9 @@
 
     <!-- Nav Links -->
     <nav class="main-nav">
-      <button onclick="switchTab('flights')" class="nav-pill">✈️ 항공편</button>
-      <button onclick="switchTab('hotels')"  class="nav-pill">🏨 호텔</button>
-      <button onclick="switchTab('planner')" class="nav-pill">🤖 AI 플래너</button>
+      <button onclick="openSearchModal('flights')" class="nav-pill">✈️ 항공편</button>
+      <button onclick="openSearchModal('hotels')"  class="nav-pill">🏨 호텔</button>
+      <button onclick="openSearchModal('planner')" class="nav-pill">🤖 AI 플래너</button>
       <button onclick="openBookingsModal()"  class="nav-pill nav-pill-booking">
         📋 내 예약
         <span id="booking-badge" class="hidden booking-badge">0</span>
@@ -50,9 +50,9 @@
 
   <!-- Mobile Menu -->
   <div id="mobile-menu" class="hidden mobile-menu md:hidden">
-    <button onclick="switchTab('flights'); toggleMobileMenu()" class="mobile-nav-item">✈️ 항공편</button>
-    <button onclick="switchTab('hotels');  toggleMobileMenu()" class="mobile-nav-item">🏨 호텔</button>
-    <button onclick="switchTab('planner'); toggleMobileMenu()" class="mobile-nav-item">🤖 AI 플래너</button>
+    <button onclick="openSearchModal('flights'); toggleMobileMenu()" class="mobile-nav-item">✈️ 항공편</button>
+    <button onclick="openSearchModal('hotels');  toggleMobileMenu()" class="mobile-nav-item">🏨 호텔</button>
+    <button onclick="openSearchModal('planner'); toggleMobileMenu()" class="mobile-nav-item">🤖 AI 플래너</button>
     <button onclick="openBookingsModal();  toggleMobileMenu()" class="mobile-nav-item">📋 내 예약</button>
   </div>
 </header>
@@ -131,6 +131,169 @@
       </div>
     </div><!-- /ai-recommend-card -->
 
+    <!-- (검색 카드는 추천 결과 → 팝업 모달로 이동) -->
+
+
+    <!-- Trust Strip -->
+    <div class="trust-strip">
+      <div class="trust-item"><span class="trust-check">✓</span> 250만+ 여행객</div>
+      <div class="trust-dot"></div>
+      <div class="trust-item"><span class="trust-check">✓</span> 24/7 AI 지원</div>
+      <div class="trust-dot"></div>
+      <div class="trust-item"><span class="trust-check">✓</span> 최저가 보장</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ AI 추천 결과 ═══════════════════════════════════════ -->
+<section id="ai-results-section" class="hidden max-w-7xl mx-auto px-4 py-10">
+  <div class="text-center mb-8">
+    <h2 id="ai-results-title" class="text-2xl font-bold text-gray-800">✨ AI 맞춤 여행지 추천</h2>
+    <p id="ai-results-subtitle" class="text-gray-500 mt-1 text-sm"></p>
+  </div>
+  <div id="ai-summary-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 text-blue-700 text-sm font-medium text-center"></div>
+  <div id="ai-dest-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+</section>
+
+<!-- ═══════════════════════════════════════ STATS STRIP ═══════════════════════════════════════ -->
+<section class="stats-section">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num">250만+</div>
+      <div class="stat-label">누적 여행객</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">180+</div>
+      <div class="stat-label">취항 목적지</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">4.9★</div>
+      <div class="stat-label">평균 만족도</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">AI 고객 지원</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">✈️ AI<span>Travel</span></div>
+      <p class="footer-tagline">Claude AI와 함께하는 스마트 여행의 시작</p>
+      <div class="footer-social">
+        <a href="#" class="social-btn">📘</a>
+        <a href="#" class="social-btn">📷</a>
+        <a href="#" class="social-btn">🐦</a>
+        <a href="#" class="social-btn">▶️</a>
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>서비스</h4>
+        <ul>
+          <li><a href="#" onclick="openSearchModal('flights');return false;">항공편 검색</a></li>
+          <li><a href="#" onclick="openSearchModal('hotels');return false;">호텔 검색</a></li>
+          <li><a href="#" onclick="openSearchModal('planner');return false;">AI 일정 플래너</a></li>
+          <li><a href="#" onclick="openBookingsModal();return false;">예약 관리</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>고객 지원</h4>
+        <ul>
+          <li><a href="#">예약 조회</a></li>
+          <li><a href="#">취소 / 환불</a></li>
+          <li><a href="#">자주 묻는 질문</a></li>
+          <li><a href="#">1:1 문의</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>여행 정보</h4>
+        <ul>
+          <li><a href="#">인기 여행지</a></li>
+          <li><a href="#">여행 꿀팁</a></li>
+          <li><a href="#">비자 정보</a></li>
+          <li><a href="#">여행 보험</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>회사 정보</h4>
+        <ul>
+          <li><a href="#">회사 소개</a></li>
+          <li><a href="#">이용약관</a></li>
+          <li><a href="#">개인정보처리방침</a></li>
+          <li><a href="#">파트너십</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 AI Travel. All rights reserved.</p>
+    <p>Powered by <span>Claude AI (Anthropic)</span></p>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════ AI CHAT WIDGET ═══════════════════════════════════════ -->
+<div id="chat-widget" class="chat-widget">
+  <!-- Panel -->
+  <div id="chat-panel" class="hidden chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <p class="chat-name">AI 여행 어시스턴트</p>
+          <p class="chat-status"><span class="online-dot"></span>Claude AI · 24시간 운영</p>
+        </div>
+      </div>
+      <button onclick="toggleChat()" class="chat-close">✕</button>
+    </div>
+
+    <div id="chat-messages" class="chat-messages">
+      <div class="chat-msg assistant">
+        <div class="chat-bubble assistant-bubble">
+          안녕하세요! 👋 저는 AI 여행 어시스턴트입니다.<br/>
+          어떤 여행을 계획하고 계신가요? 목적지 추천, 일정 계획, 현지 정보 등 무엇이든 물어보세요! ✈️
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-quick-btns">
+      <button class="quick-btn" onclick="sendQuickMsg('도쿄 3박 4일 추천 코스 알려줘')">🗼 도쿄 코스</button>
+      <button class="quick-btn" onclick="sendQuickMsg('방콕 맛집 추천해줘')">🍜 방콕 맛집</button>
+      <button class="quick-btn" onclick="sendQuickMsg('허니문 여행지 추천해줘')">💑 허니문</button>
+      <button class="quick-btn" onclick="sendQuickMsg('여름 유럽 여행 팁 알려줘')">🌍 유럽 팁</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input id="chat-input" type="text" placeholder="여행 질문을 입력하세요…"
+        class="chat-input"
+        onkeydown="if(event.key==='Enter') sendChat()" />
+      <button onclick="sendChat()" id="chat-send-btn" class="chat-send-btn">전송</button>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button onclick="toggleChat()" id="chat-fab" class="chat-fab">
+    <span class="chat-fab-icon">🤖</span>
+    <span class="chat-fab-pulse"></span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════ SEARCH MODAL (항공/호텔/플래너) ═══════════════════════════════════════ -->
+<div id="search-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeSearchModal()">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 id="search-modal-title" class="modal-title">🔎 검색</h2>
+      <button onclick="closeSearchModal()" class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
     <!-- ── Search Card ── -->
     <div class="search-card" style="margin-top:1.5rem">
 
@@ -292,29 +455,7 @@
         </div>
       </div>
     </div><!-- /search-card -->
-
-    <!-- Trust Strip -->
-    <div class="trust-strip">
-      <div class="trust-item"><span class="trust-check">✓</span> 250만+ 여행객</div>
-      <div class="trust-dot"></div>
-      <div class="trust-item"><span class="trust-check">✓</span> 24/7 AI 지원</div>
-      <div class="trust-dot"></div>
-      <div class="trust-item"><span class="trust-check">✓</span> 최저가 보장</div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ AI 추천 결과 ═══════════════════════════════════════ -->
-<section id="ai-results-section" class="hidden max-w-7xl mx-auto px-4 py-10">
-  <div class="text-center mb-8">
-    <h2 id="ai-results-title" class="text-2xl font-bold text-gray-800">✨ AI 맞춤 여행지 추천</h2>
-    <p id="ai-results-subtitle" class="text-gray-500 mt-1 text-sm"></p>
-  </div>
-  <div id="ai-summary-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 text-blue-700 text-sm font-medium text-center"></div>
-  <div id="ai-dest-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-</section>
-
-<!-- ═══════════════════════════════════════ SEARCH RESULTS ═══════════════════════════════════════ -->
+      <div id="modal-results-wrap" class="mt-2">
 <section id="results-section" class="hidden max-w-7xl mx-auto px-4 py-8">
   <div class="results-header">
     <div>
@@ -339,263 +480,9 @@
     <p class="text-gray-300 text-sm mt-1">다른 조건으로 다시 검색해보세요.</p>
   </div>
 </section>
-
-<!-- ═══════════════════════════════════════ TODAY'S DEALS ═══════════════════════════════════════ -->
-<section class="page-section">
-  <div class="section-head">
-    <div>
-      <h2 class="section-title">🔥 오늘의 특가</h2>
-      <p class="section-sub">한정 수량 · 지금 바로 예약하세요</p>
-    </div>
-    <button class="see-all-link">전체 보기 →</button>
-  </div>
-
-  <div class="deals-scroll">
-    <!-- Deal 1 -->
-    <div class="deal-card" onclick="quickFlightSearch('서울', '도쿄')">
-      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=80')"></div>
-      <div class="deal-overlay"></div>
-      <div class="deal-badge">BEST</div>
-      <div class="deal-info">
-        <div class="deal-city">도쿄</div>
-        <div class="deal-country">일본</div>
-        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩89,900~</span></div>
-      </div>
-    </div>
-    <!-- Deal 2 -->
-    <div class="deal-card" onclick="quickFlightSearch('서울', '방콕')">
-      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80')"></div>
-      <div class="deal-overlay"></div>
-      <div class="deal-badge deal-badge-hot">HOT</div>
-      <div class="deal-info">
-        <div class="deal-city">방콕</div>
-        <div class="deal-country">태국</div>
-        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩129,000~</span></div>
-      </div>
-    </div>
-    <!-- Deal 3 -->
-    <div class="deal-card" onclick="quickFlightSearch('서울', '발리')">
-      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=80')"></div>
-      <div class="deal-overlay"></div>
-      <div class="deal-badge deal-badge-new">NEW</div>
-      <div class="deal-info">
-        <div class="deal-city">발리</div>
-        <div class="deal-country">인도네시아</div>
-        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩245,000~</span></div>
-      </div>
-    </div>
-    <!-- Deal 4 -->
-    <div class="deal-card" onclick="quickFlightSearch('서울', '파리')">
-      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=80')"></div>
-      <div class="deal-overlay"></div>
-      <div class="deal-info">
-        <div class="deal-city">파리</div>
-        <div class="deal-country">프랑스</div>
-        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩689,000~</span></div>
-      </div>
-    </div>
-    <!-- Deal 5 -->
-    <div class="deal-card" onclick="quickFlightSearch('서울', '싱가포르')">
-      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&q=80')"></div>
-      <div class="deal-overlay"></div>
-      <div class="deal-badge deal-badge-sale">SALE</div>
-      <div class="deal-info">
-        <div class="deal-city">싱가포르</div>
-        <div class="deal-country">싱가포르</div>
-        <div class="deal-price"><span class="deal-from">항공</span> <span class="deal-amount">₩189,000~</span></div>
-      </div>
-    </div>
-    <!-- Deal 6 -->
-    <div class="deal-card" onclick="quickSearch('제주')">
-      <div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=400&q=80')"></div>
-      <div class="deal-overlay"></div>
-      <div class="deal-badge">국내</div>
-      <div class="deal-info">
-        <div class="deal-city">제주</div>
-        <div class="deal-country">대한민국</div>
-        <div class="deal-price"><span class="deal-from">호텔</span> <span class="deal-amount">₩78,000~</span></div>
       </div>
     </div>
   </div>
-</section>
-
-<!-- ═══════════════════════════════════════ POPULAR DESTINATIONS ═══════════════════════════════════════ -->
-<section class="page-section">
-  <div class="section-head">
-    <div>
-      <h2 class="section-title">🌍 인기 여행지</h2>
-      <p class="section-sub">지금 가장 뜨거운 목적지를 확인하세요</p>
-    </div>
-    <button class="see-all-link">전체 보기 →</button>
-  </div>
-
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="destinations-grid">
-    <div class="col-span-4 text-center py-10 text-gray-300">
-      <div class="loader mx-auto mb-3"></div>
-      <p class="text-sm">목적지 로드 중…</p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ AI FEATURES ═══════════════════════════════════════ -->
-<section class="features-section">
-  <div class="features-inner">
-    <div class="features-head">
-      <h2 class="features-title">AI가 만드는 완벽한 여행</h2>
-      <p class="features-sub">Claude AI가 당신의 취향을 분석해 최적의 여행 계획을 세워드립니다</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card" onclick="switchTab('planner')">
-        <div class="feature-icon-wrap">🗺️</div>
-        <h3 class="feature-title">AI 맞춤 일정 생성</h3>
-        <p class="feature-desc">목적지·기간·관심사 입력만으로 완벽한 하루하루 일정을 자동 생성합니다</p>
-        <span class="feature-cta">지금 시작 →</span>
-      </div>
-      <div class="feature-card" onclick="toggleChat()">
-        <div class="feature-icon-wrap">💬</div>
-        <h3 class="feature-title">AI 여행 어시스턴트</h3>
-        <p class="feature-desc">24시간 언제든지 여행 관련 질문을 AI에게 물어보세요. 현지 정보부터 예산까지</p>
-        <span class="feature-cta">AI 상담 →</span>
-      </div>
-      <div class="feature-card" onclick="openBookingsModal()">
-        <div class="feature-icon-wrap">📋</div>
-        <h3 class="feature-title">스마트 예약 관리</h3>
-        <p class="feature-desc">항공편·호텔 예약을 한 곳에서 통합 관리하고 언제든 확인하세요</p>
-        <span class="feature-cta">예약 확인 →</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ STATS STRIP ═══════════════════════════════════════ -->
-<section class="stats-section">
-  <div class="stats-inner">
-    <div class="stat-item">
-      <div class="stat-num">250만+</div>
-      <div class="stat-label">누적 여행객</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">180+</div>
-      <div class="stat-label">취항 목적지</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">4.9★</div>
-      <div class="stat-label">평균 만족도</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">24/7</div>
-      <div class="stat-label">AI 고객 지원</div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="footer-logo">✈️ AI<span>Travel</span></div>
-      <p class="footer-tagline">Claude AI와 함께하는 스마트 여행의 시작</p>
-      <div class="footer-social">
-        <a href="#" class="social-btn">📘</a>
-        <a href="#" class="social-btn">📷</a>
-        <a href="#" class="social-btn">🐦</a>
-        <a href="#" class="social-btn">▶️</a>
-      </div>
-    </div>
-
-    <div class="footer-links">
-      <div class="footer-col">
-        <h4>서비스</h4>
-        <ul>
-          <li><a href="#" onclick="switchTab('flights');return false;">항공편 검색</a></li>
-          <li><a href="#" onclick="switchTab('hotels');return false;">호텔 검색</a></li>
-          <li><a href="#" onclick="switchTab('planner');return false;">AI 일정 플래너</a></li>
-          <li><a href="#" onclick="openBookingsModal();return false;">예약 관리</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>고객 지원</h4>
-        <ul>
-          <li><a href="#">예약 조회</a></li>
-          <li><a href="#">취소 / 환불</a></li>
-          <li><a href="#">자주 묻는 질문</a></li>
-          <li><a href="#">1:1 문의</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>여행 정보</h4>
-        <ul>
-          <li><a href="#">인기 여행지</a></li>
-          <li><a href="#">여행 꿀팁</a></li>
-          <li><a href="#">비자 정보</a></li>
-          <li><a href="#">여행 보험</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>회사 정보</h4>
-        <ul>
-          <li><a href="#">회사 소개</a></li>
-          <li><a href="#">이용약관</a></li>
-          <li><a href="#">개인정보처리방침</a></li>
-          <li><a href="#">파트너십</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2026 AI Travel. All rights reserved.</p>
-    <p>Powered by <span>Claude AI (Anthropic)</span></p>
-  </div>
-</footer>
-
-<!-- ═══════════════════════════════════════ AI CHAT WIDGET ═══════════════════════════════════════ -->
-<div id="chat-widget" class="chat-widget">
-  <!-- Panel -->
-  <div id="chat-panel" class="hidden chat-panel">
-    <div class="chat-header">
-      <div class="chat-header-info">
-        <div class="chat-avatar">🤖</div>
-        <div>
-          <p class="chat-name">AI 여행 어시스턴트</p>
-          <p class="chat-status"><span class="online-dot"></span>Claude AI · 24시간 운영</p>
-        </div>
-      </div>
-      <button onclick="toggleChat()" class="chat-close">✕</button>
-    </div>
-
-    <div id="chat-messages" class="chat-messages">
-      <div class="chat-msg assistant">
-        <div class="chat-bubble assistant-bubble">
-          안녕하세요! 👋 저는 AI 여행 어시스턴트입니다.<br/>
-          어떤 여행을 계획하고 계신가요? 목적지 추천, 일정 계획, 현지 정보 등 무엇이든 물어보세요! ✈️
-        </div>
-      </div>
-    </div>
-
-    <div class="chat-quick-btns">
-      <button class="quick-btn" onclick="sendQuickMsg('도쿄 3박 4일 추천 코스 알려줘')">🗼 도쿄 코스</button>
-      <button class="quick-btn" onclick="sendQuickMsg('방콕 맛집 추천해줘')">🍜 방콕 맛집</button>
-      <button class="quick-btn" onclick="sendQuickMsg('허니문 여행지 추천해줘')">💑 허니문</button>
-      <button class="quick-btn" onclick="sendQuickMsg('여름 유럽 여행 팁 알려줘')">🌍 유럽 팁</button>
-    </div>
-
-    <div class="chat-input-row">
-      <input id="chat-input" type="text" placeholder="여행 질문을 입력하세요…"
-        class="chat-input"
-        onkeydown="if(event.key==='Enter') sendChat()" />
-      <button onclick="sendChat()" id="chat-send-btn" class="chat-send-btn">전송</button>
-    </div>
-  </div>
-
-  <!-- FAB -->
-  <button onclick="toggleChat()" id="chat-fab" class="chat-fab">
-    <span class="chat-fab-icon">🤖</span>
-    <span class="chat-fab-pulse"></span>
-  </button>
 </div>
 
 <!-- ═══════════════════════════════════════ BOOKINGS MODAL ═══════════════════════════════════════ -->
