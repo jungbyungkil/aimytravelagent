@@ -30,6 +30,9 @@ class ItineraryRequest(BaseModel):
     start_date: str
     interests: List[str]
     budget: str = "medium"
+    flight: Optional[Dict[str, Any]] = None
+    hotel: Optional[Dict[str, Any]] = None
+    traveler: str = ""
 
 
 class DestinationRecommendRequest(BaseModel):
