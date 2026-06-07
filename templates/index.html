@@ -59,8 +59,58 @@
 
 <!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
 <section class="hero-section">
-  <!-- Background Image -->
+  <!-- 직접 디자인한 배경 (라이선스 프리: 순수 CSS + 자작 SVG) -->
   <div class="hero-bg"></div>
+
+  <!-- 자작 SVG 데코: 지도 그리드 · 비행 경로 · 목적지 · 비행기 -->
+  <svg class="hero-deco" viewBox="0 0 1440 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="glowA" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="glowB" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#A78BFA" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#7DD3FC"/>
+        <stop offset="100%" stop-color="#C4B5FD"/>
+      </linearGradient>
+    </defs>
+
+    <!-- 은은한 글로우 오브 -->
+    <circle cx="240" cy="140" r="260" fill="url(#glowA)"/>
+    <circle cx="1240" cy="470" r="300" fill="url(#glowB)"/>
+
+    <!-- 위도/경도 지도 그리드 -->
+    <g class="hero-grid" stroke="#9CC7FF" stroke-opacity="0.10" stroke-width="1">
+      <path d="M0 120 H1440 M0 220 H1440 M0 320 H1440 M0 420 H1440 M0 520 H1440"/>
+      <path d="M160 0 V600 M360 0 V600 M560 0 V600 M760 0 V600 M960 0 V600 M1160 0 V600 M1360 0 V600"/>
+    </g>
+
+    <!-- 점선 비행 경로 (자작 곡선) -->
+    <path class="hero-route" d="M180 430 Q560 120 920 250" fill="none"
+          stroke="url(#routeGrad)" stroke-width="2.5" stroke-dasharray="2 12"
+          stroke-linecap="round" opacity="0.85"/>
+    <path class="hero-route hero-route-2" d="M620 500 Q960 360 1300 180" fill="none"
+          stroke="url(#routeGrad)" stroke-width="2.5" stroke-dasharray="2 12"
+          stroke-linecap="round" opacity="0.6"/>
+
+    <!-- 목적지 핀 (깜빡이는 점) -->
+    <g fill="#7DD3FC">
+      <circle class="hero-dot" cx="180" cy="430" r="5"/>
+      <circle class="hero-dot" cx="920" cy="250" r="5"/>
+      <circle class="hero-dot" cx="620" cy="500" r="4"/>
+      <circle class="hero-dot" cx="1300" cy="180" r="4"/>
+    </g>
+
+    <!-- 떠다니는 비행기 (자작 패스) -->
+    <g class="hero-plane">
+      <path d="M0 0 L26 9 L9 11 L4 22 L-1 12 L-12 11 L0 0 Z" fill="#FFFFFF" opacity="0.92"/>
+    </g>
+  </svg>
+
   <!-- Overlay -->
   <div class="hero-overlay"></div>
 
@@ -144,16 +194,6 @@
     </div><!-- /ai-recommend-card -->
 
     <!-- (검색 카드는 추천 결과 → 팝업 모달로 이동) -->
-
-
-    <!-- Trust Strip -->
-    <div class="trust-strip">
-      <div class="trust-item"><span class="trust-check">✓</span> 250만+ 여행객</div>
-      <div class="trust-dot"></div>
-      <div class="trust-item"><span class="trust-check">✓</span> 24/7 AI 지원</div>
-      <div class="trust-dot"></div>
-      <div class="trust-item"><span class="trust-check">✓</span> 최저가 보장</div>
-    </div>
   </div>
 </section>
 
@@ -165,31 +205,6 @@
   </div>
   <div id="ai-summary-box" class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 text-blue-700 text-sm font-medium text-center"></div>
   <div id="ai-dest-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-</section>
-
-<!-- ═══════════════════════════════════════ STATS STRIP ═══════════════════════════════════════ -->
-<section class="stats-section">
-  <div class="stats-inner">
-    <div class="stat-item">
-      <div class="stat-num">250만+</div>
-      <div class="stat-label">누적 여행객</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">180+</div>
-      <div class="stat-label">취항 목적지</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">4.9★</div>
-      <div class="stat-label">평균 만족도</div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">24/7</div>
-      <div class="stat-label">AI 고객 지원</div>
-    </div>
-  </div>
 </section>
 
 <!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->

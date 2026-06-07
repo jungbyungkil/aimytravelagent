@@ -247,36 +247,77 @@ body {
   overflow: hidden;
 }
 
+/* ── 자작 히어로 배경 (라이선스 프리) ── */
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center 40%;
-  transform: scale(1.04);
-  animation: heroZoom 20s ease-in-out infinite alternate;
+  background:
+    radial-gradient(1200px 500px at 18% 12%, rgba(56,189,248,0.30) 0%, transparent 60%),
+    radial-gradient(900px 500px at 88% 88%, rgba(167,139,250,0.28) 0%, transparent 60%),
+    linear-gradient(135deg, #0A1A40 0%, #0B2A6B 38%, #0E4FA8 68%, #1E6FD0 100%);
 }
-@keyframes heroZoom {
-  from { transform: scale(1.04); }
-  to   { transform: scale(1.10); }
-}
-/* Fallback gradient if image fails */
-.hero-bg::after {
-  content: '';
+
+/* 자작 SVG 데코 레이어 */
+.hero-deco {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #001F5C 0%, #0554B0 40%, #0E72CC 70%, #38BDF8 100%);
-  opacity: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+.hero-grid path { animation: gridDrift 24s ease-in-out infinite alternate; }
+@keyframes gridDrift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-30px); }
+}
+/* 점선 경로가 흐르는 효과 */
+.hero-route {
+  stroke-dashoffset: 0;
+  animation: routeFlow 2.2s linear infinite;
+}
+.hero-route-2 { animation-duration: 3s; }
+@keyframes routeFlow {
+  to { stroke-dashoffset: -28; }
+}
+/* 목적지 점 깜빡임 */
+.hero-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dotPulse 2.4s ease-in-out infinite;
+}
+.hero-dot:nth-child(2) { animation-delay: 0.6s; }
+.hero-dot:nth-child(3) { animation-delay: 1.2s; }
+.hero-dot:nth-child(4) { animation-delay: 1.8s; }
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50%      { opacity: 1;   transform: scale(1.35); }
+}
+/* 비행기 비행 애니메이션 (경로 위를 따라 이동) */
+.hero-plane {
+  offset-path: path('M180 430 Q560 120 920 250');
+  offset-rotate: auto;
+  animation: planeFly 9s ease-in-out infinite;
+}
+@keyframes planeFly {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-route, .hero-dot, .hero-plane, .hero-grid path { animation: none; }
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     to bottom,
-    rgba(0,10,30,0.55) 0%,
-    rgba(0,10,30,0.35) 40%,
-    rgba(0,10,30,0.65) 100%
+    rgba(5,12,34,0.30) 0%,
+    rgba(5,12,34,0.10) 45%,
+    rgba(5,12,34,0.55) 100%
   );
 }
 
