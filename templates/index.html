@@ -85,22 +85,34 @@
       <div class="ai-recommend-form">
         <div class="ai-form-row">
           <div class="ai-form-field">
-            <label class="ai-form-label">👨‍👩‍👧‍👦 여행 인원 / 구성</label>
+            <label class="ai-form-label">
+              👨‍👩‍👧‍👦 여행 인원 / 구성
+              <button type="button" class="ai-example-fill" onclick="useExample('ai-party')">📋 예시 넣기</button>
+            </label>
             <input id="ai-party" type="text"
+              data-example="4인 가족 — 초등6학년 여아, 3학년 남아, 어른 2명"
               placeholder="예) 4인 가족 — 초등6학년 여아, 3학년 남아, 어른 2명"
               class="ai-form-input" />
           </div>
           <div class="ai-form-field ai-form-field-sm">
-            <label class="ai-form-label">📅 여행 시기</label>
+            <label class="ai-form-label">
+              📅 여행 시기
+              <button type="button" class="ai-example-fill" onclick="useExample('ai-period')">📋 예시 넣기</button>
+            </label>
             <input id="ai-period" type="text"
+              data-example="12월 말 또는 2027년 1월, 11월 17일경"
               placeholder="예) 12월 말 또는 2027년 1월, 11월 17일경"
               class="ai-form-input" />
           </div>
         </div>
         <div class="ai-form-row">
           <div class="ai-form-field">
-            <label class="ai-form-label">💬 선호 / 기타 (선택)</label>
+            <label class="ai-form-label">
+              💬 선호 / 기타 (선택)
+              <button type="button" class="ai-example-fill" onclick="useExample('ai-pref')">📋 예시 넣기</button>
+            </label>
             <input id="ai-pref" type="text"
+              data-example="아이들이 좋아할 테마파크, 해변, 자연, 예산 200만원 이내"
               placeholder="예) 아이들이 좋아할 테마파크, 해변, 자연, 예산 200만원 이내…"
               class="ai-form-input" />
           </div>

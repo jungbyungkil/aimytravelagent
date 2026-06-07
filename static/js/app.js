@@ -774,6 +774,19 @@ function fillAIExample(key) {
   document.getElementById('ai-pref').value   = ex.pref;
 }
 
+// 개별 입력칸에 예시 문구 채우기 (data-example 사용)
+function useExample(inputId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const example = el.dataset.example || '';
+  if (!example) return;
+  el.value = example;
+  el.focus();
+  // 짧은 하이라이트 효과
+  el.classList.add('ai-input-flash');
+  setTimeout(() => el.classList.remove('ai-input-flash'), 500);
+}
+
 async function recommendDestinations() {
   const party  = document.getElementById('ai-party')?.value?.trim();
   const period = document.getElementById('ai-period')?.value?.trim();
