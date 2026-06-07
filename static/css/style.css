@@ -1015,12 +1015,9 @@ body {
 .social-btn:hover { background: rgba(255,255,255,0.18); }
 
 .footer-links {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-@media (max-width: 640px) {
-  .footer-links { grid-template-columns: repeat(2, 1fr); }
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
 }
 .footer-col h4 {
   font-size: 13px;
