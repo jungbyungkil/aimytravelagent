@@ -30,6 +30,10 @@
         📋 내 예약
         <span id="booking-badge" class="hidden booking-badge">0</span>
       </button>
+      <button onclick="openReceiptsModal()" class="nav-pill nav-pill-receipt">
+        🧾 영수증
+        <span id="receipt-badge" class="hidden booking-badge" style="background:#f59e0b">0</span>
+      </button>
     </nav>
 
     <!-- Right Actions -->
@@ -54,6 +58,7 @@
     <button onclick="openSearchModal('hotels');  toggleMobileMenu()" class="mobile-nav-item">🏨 호텔</button>
     <button onclick="openSearchModal('planner'); toggleMobileMenu()" class="mobile-nav-item">🤖 AI 플래너</button>
     <button onclick="openBookingsModal();  toggleMobileMenu()" class="mobile-nav-item">📋 내 예약</button>
+    <button onclick="openReceiptsModal();  toggleMobileMenu()" class="mobile-nav-item">🧾 영수증 관리</button>
   </div>
 </header>
 
@@ -516,6 +521,48 @@
 <!-- Toast -->
 <div id="toast" class="hidden toast"></div>
 
+<!-- ═══════════════════════════════════════ RECEIPTS MODAL ═══════════════════════════════════════ -->
+<div id="receipts-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeReceiptsModal()">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🧾 전자 영수증 관리</h2>
+      <div class="flex gap-2 items-center">
+        <label for="receipt-file-input" class="btn-upload" title="PDF 영수증 업로드">
+          📎 영수증 업로드
+          <input type="file" id="receipt-file-input" accept=".pdf" class="hidden" onchange="uploadReceipt(this)" />
+        </label>
+        <button onclick="closeReceiptsModal()" class="modal-close">✕</button>
+      </div>
+    </div>
+    <div id="receipts-list" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ RECEIPT DETAIL MODAL ═══════════════════════════════════════ -->
+<div id="receipt-detail-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeReceiptDetailModal()">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 id="receipt-detail-title" class="modal-title">🧾 예약 상세 정보</h2>
+      <button onclick="closeReceiptDetailModal()" class="modal-close">✕</button>
+    </div>
+    <div id="receipt-detail-content" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ RECEIPT ITINERARY MODAL ═══════════════════════════════════════ -->
+<div id="receipt-itinerary-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeReceiptItineraryModal()">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 id="receipt-itinerary-title" class="modal-title">✨ AI 맞춤 여행 일정</h2>
+      <div class="flex gap-2 items-center">
+        <button onclick="window.print()" class="btn-print">🖨️ 인쇄</button>
+        <button onclick="closeReceiptItineraryModal()" class="modal-close">✕</button>
+      </div>
+    </div>
+    <div id="receipt-itinerary-content" class="modal-body"></div>
+  </div>
+</div>
+
 <script src="/static/js/app.js"></script>
 <script>
 // ── Header scroll effect ──────────────────
@@ -555,6 +602,291 @@ function quickFlightSearch(origin, dest) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   setTimeout(searchFlights, 600);
 }
+
+// ════════════════════════════════════════
+// 영수증 관리 기능
+// ════════════════════════════════════════
+let currentReceiptId = null;
+
+async function openReceiptsModal() {
+  document.getElementById('receipts-modal').classList.remove('hidden');
+  await loadReceiptsList();
+}
+function closeReceiptsModal() { document.getElementById('receipts-modal').classList.add('hidden'); }
+function closeReceiptDetailModal() { document.getElementById('receipt-detail-modal').classList.add('hidden'); }
+function closeReceiptItineraryModal() { document.getElementById('receipt-itinerary-modal').classList.add('hidden'); }
+
+async function loadReceiptsList() {
+  const container = document.getElementById('receipts-list');
+  container.innerHTML = '<div class="text-center py-10"><div class="loader mx-auto mb-3"></div><p class="text-gray-400 text-sm">영수증 로드 중...</p></div>';
+  try {
+    const res = await fetch('/api/receipts/');
+    const data = await res.json();
+    renderReceiptsList(data.receipts || []);
+    updateReceiptBadge(data.count || 0);
+  } catch (e) {
+    container.innerHTML = '<p class="text-center text-red-400 py-8">영수증을 불러올 수 없습니다.</p>';
+  }
+}
+
+function updateReceiptBadge(count) {
+  const badge = document.getElementById('receipt-badge');
+  if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
+}
+
+function renderReceiptsList(receipts) {
+  const container = document.getElementById('receipts-list');
+  if (!receipts.length) {
+    container.innerHTML = `<div class="text-center py-16">
+      <div class="text-6xl mb-4">🧾</div>
+      <p class="text-gray-400 text-lg font-medium">저장된 영수증이 없습니다</p>
+      <p class="text-gray-300 text-sm mt-2">Trip.com, 네이버 등의 전자 영수증 PDF를 업로드하세요</p>
+      <label for="receipt-file-input" class="btn-upload mt-4 inline-block cursor-pointer">📎 지금 업로드하기</label>
+    </div>`;
+    return;
+  }
+  container.innerHTML = receipts.map(r => {
+    const flights = r.flights || [];
+    const hotels = r.hotels || [];
+    const uploadDate = new Date(r.uploaded_at).toLocaleDateString('ko-KR');
+    const hasItinerary = !!r.itinerary;
+    const flightSummary = flights.map(f => `<span class="receipt-tag">✈️ ${f.route||''} (${(f.departure_datetime||'').split(' ')[0]})</span>`).join('');
+    const hotelSummary = hotels.map(h => `<span class="receipt-tag">🏨 ${h.name||''} (${h.check_in||''}~${h.check_out||''})</span>`).join('');
+    return `<div class="receipt-card">
+      <div class="receipt-card-header">
+        <div class="receipt-card-left">
+          <div class="receipt-source-badge">${r.booking_source||'예약'}</div>
+          <div>
+            <p class="receipt-booking-num">예약번호: ${r.booking_number||'-'}</p>
+            <p class="receipt-destination">${r.destination_city||''} ${r.destination_country?'· '+r.destination_country:''}</p>
+          </div>
+        </div>
+        <div class="receipt-card-right">
+          <span class="receipt-amount">${r.total_amount?(r.total_amount).toLocaleString()+' '+(r.total_currency||'KRW'):'-'}</span>
+          <span class="receipt-date">${uploadDate} 업로드</span>
+        </div>
+      </div>
+      <div class="receipt-tags-row">${flightSummary}${hotelSummary}</div>
+      <div class="receipt-passengers">탑승객: ${(r.passengers||[]).map(p=>p.name).join(', ')||'-'}</div>
+      <div class="receipt-actions">
+        <button onclick="viewReceiptDetail('${r.id}')" class="btn-receipt-detail">🔍 상세 보기</button>
+        ${hasItinerary
+          ? `<button onclick="viewSavedItinerary('${r.id}')" class="btn-receipt-itinerary saved">📅 저장된 일정 보기</button>`
+          : `<button onclick="openItineraryOptions('${r.id}')" class="btn-receipt-itinerary">✨ AI 여행 일정 생성</button>`}
+        <button onclick="deleteReceipt('${r.id}')" class="btn-receipt-delete">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function uploadReceipt(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  input.value = '';
+  if (!file.name.toLowerCase().endsWith('.pdf')) { showToast('PDF 파일만 업로드 가능합니다.', 'error'); return; }
+  showLoading('영수증 분석 중... AI가 예약 정보를 파싱합니다 🤖');
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/receipts/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || '업로드 실패');
+    hideLoading();
+    showToast('영수증이 성공적으로 파싱되었습니다! 🎉');
+    await loadReceiptsList();
+  } catch (e) { hideLoading(); showToast('업로드 실패: ' + e.message, 'error'); }
+}
+
+async function deleteReceipt(receiptId) {
+  if (!confirm('이 영수증을 삭제하시겠습니까?')) return;
+  try {
+    await fetch(`/api/receipts/${receiptId}`, { method: 'DELETE' });
+    showToast('영수증이 삭제되었습니다.');
+    await loadReceiptsList();
+  } catch (e) { showToast('삭제 실패: ' + e.message, 'error'); }
+}
+
+async function viewReceiptDetail(receiptId) {
+  try {
+    const res = await fetch(`/api/receipts/${receiptId}`);
+    const data = await res.json();
+    const r = data.receipt;
+    document.getElementById('receipt-detail-title').textContent = `🧾 ${r.booking_source||'예약'} · ${r.booking_number||''}`;
+    const flights = r.flights || [];
+    const hotels = r.hotels || [];
+    const passengers = r.passengers || [];
+    const priceBreakdown = r.price_breakdown || [];
+    const flightsHtml = flights.map(f => `<div class="detail-flight-card">
+      <div class="detail-flight-route">${f.route||'-'}</div>
+      <div class="detail-flight-info">
+        <span>✈️ ${f.airline||''} ${f.flight_number||''}</span>
+        <span>📅 ${f.departure_datetime||''}</span>
+        <span>🛬 ${f.arrival_datetime||''}</span>
+        <span>💺 ${f.cabin_class||''}</span>
+        ${f.pnr?`<span>PNR: ${f.pnr}</span>`:''}
+      </div></div>`).join('');
+    const hotelsHtml = hotels.map(h => `<div class="detail-hotel-card">
+      <div class="detail-hotel-name">🏨 ${h.name||'-'}</div>
+      <div class="detail-hotel-info">
+        <span>${h.location||''}</span><span>체크인: ${h.check_in||''}</span>
+        <span>체크아웃: ${h.check_out||''}</span><span>${h.nights||''}박</span>
+        <span>${h.room_type||''}</span>
+      </div></div>`).join('');
+    const passengersHtml = passengers.map(p => `<div class="detail-passenger">
+      <span class="passenger-name">${p.name}</span>
+      <span class="passenger-type">${p.type}</span>
+      ${p.ticket_number?`<span class="passenger-ticket">${p.ticket_number}</span>`:''}
+    </div>`).join('');
+    const priceHtml = priceBreakdown.map(p => `<div class="price-row"><span>${p.item}</span><span>${(p.amount||0).toLocaleString()} ${p.currency||'KRW'}</span></div>`).join('');
+    document.getElementById('receipt-detail-content').innerHTML = `
+      <div class="receipt-detail-grid">
+        <section class="detail-section"><h3 class="detail-section-title">✈️ 항공편</h3>${flightsHtml||'<p class="text-gray-400">항공편 정보 없음</p>'}</section>
+        <section class="detail-section"><h3 class="detail-section-title">🏨 호텔</h3>${hotelsHtml||'<p class="text-gray-400">호텔 정보 없음</p>'}</section>
+        <section class="detail-section"><h3 class="detail-section-title">👥 탑승객</h3><div class="passengers-list">${passengersHtml||'-'}</div></section>
+        <section class="detail-section"><h3 class="detail-section-title">💳 요금 내역</h3>
+          <div class="price-breakdown">${priceHtml}</div>
+          <div class="price-total">총 합계: ${(r.total_amount||0).toLocaleString()} ${r.total_currency||'KRW'}</div>
+        </section>
+      </div>
+      <div class="mt-6 text-center">
+        <button onclick="openItineraryOptions('${r.id}'); closeReceiptDetailModal();" class="btn-generate-itinerary">✨ AI 여행 일정 생성하기</button>
+      </div>`;
+    document.getElementById('receipt-detail-modal').classList.remove('hidden');
+  } catch (e) { showToast('상세 정보 로드 실패: ' + e.message, 'error'); }
+}
+
+function openItineraryOptions(receiptId) {
+  currentReceiptId = receiptId;
+  document.getElementById('receipt-itinerary-title').textContent = '✨ AI 맞춤 여행 일정 생성';
+  document.getElementById('receipt-itinerary-content').innerHTML = `
+    <div class="itinerary-options">
+      <p class="itinerary-options-desc">AI가 확정된 항공권과 호텔 정보를 바탕으로 최적의 여행 일정을 생성합니다.</p>
+      <div class="options-form">
+        <div class="option-group">
+          <label class="option-label">여행 스타일</label>
+          <div class="flex gap-2 flex-wrap" id="travel-style-options">
+            <button class="style-tag active" data-value="family" onclick="selectStyle(this)">👨‍👩‍👧‍👦 가족 여행</button>
+            <button class="style-tag" data-value="couple" onclick="selectStyle(this)">💑 커플</button>
+            <button class="style-tag" data-value="friends" onclick="selectStyle(this)">👫 친구들</button>
+            <button class="style-tag" data-value="solo" onclick="selectStyle(this)">🧳 혼자</button>
+          </div>
+        </div>
+        <div class="option-group">
+          <label class="option-label">관심사 (다중 선택)</label>
+          <div class="flex gap-2 flex-wrap" id="receipt-interest-tags">
+            <button class="interest-tag active" data-value="관광" onclick="this.classList.toggle('active')">🏛 관광</button>
+            <button class="interest-tag active" data-value="음식" onclick="this.classList.toggle('active')">🍜 맛집</button>
+            <button class="interest-tag" data-value="쇼핑" onclick="this.classList.toggle('active')">🛍 쇼핑</button>
+            <button class="interest-tag" data-value="자연" onclick="this.classList.toggle('active')">🌿 자연</button>
+            <button class="interest-tag" data-value="테마파크" onclick="this.classList.toggle('active')">🎢 테마파크</button>
+            <button class="interest-tag" data-value="역사" onclick="this.classList.toggle('active')">📜 역사</button>
+            <button class="interest-tag" data-value="야경" onclick="this.classList.toggle('active')">🌃 야경</button>
+            <button class="interest-tag" data-value="온천" onclick="this.classList.toggle('active')">♨️ 온천</button>
+          </div>
+        </div>
+      </div>
+      <button onclick="generateItineraryFromReceipt()" class="btn-generate-itinerary mt-4">✨ 일정 생성 시작</button>
+    </div>`;
+  document.getElementById('receipt-itinerary-modal').classList.remove('hidden');
+}
+
+function selectStyle(btn) {
+  document.querySelectorAll('#travel-style-options .style-tag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function generateItineraryFromReceipt() {
+  if (!currentReceiptId) return;
+  const styleBtn = document.querySelector('#travel-style-options .style-tag.active');
+  const travelStyle = styleBtn ? styleBtn.dataset.value : 'family';
+  const interests = [...document.querySelectorAll('#receipt-interest-tags .interest-tag.active')].map(b => b.dataset.value);
+  showLoading('AI가 맞춤 여행 일정을 생성 중입니다... ✈️🗺️');
+  try {
+    const res = await fetch(`/api/receipts/${currentReceiptId}/itinerary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ receipt_id: currentReceiptId, travel_style: travelStyle, interests }),
+    });
+    const data = await res.json();
+    hideLoading();
+    if (!data.success) throw new Error(data.error || '일정 생성 실패');
+    renderReceiptItinerary(data.itinerary);
+  } catch (e) { hideLoading(); showToast('일정 생성 실패: ' + e.message, 'error'); }
+}
+
+async function viewSavedItinerary(receiptId) {
+  try {
+    const res = await fetch(`/api/receipts/${receiptId}`);
+    const data = await res.json();
+    if (data.receipt && data.receipt.itinerary) renderReceiptItinerary(data.receipt.itinerary);
+  } catch (e) { showToast('일정 로드 실패: ' + e.message, 'error'); }
+}
+
+function renderReceiptItinerary(itinerary) {
+  document.getElementById('receipt-itinerary-title').textContent = `✈️ ${itinerary.title||'AI 여행 일정'}`;
+  const confirmed = itinerary.confirmed_info || {};
+  const confirmedHtml = (confirmed.outbound_flight||confirmed.hotel) ? `<div class="itinerary-confirmed-box"><h4>✅ 확정된 예약</h4>
+    ${confirmed.outbound_flight?`<p>✈️ 가는 편: ${confirmed.outbound_flight}</p>`:''}
+    ${confirmed.return_flight?`<p>✈️ 오는 편: ${confirmed.return_flight}</p>`:''}
+    ${confirmed.hotel?`<p>🏨 숙소: ${confirmed.hotel}</p>`:''}
+  </div>` : '';
+  const highlightsHtml = (itinerary.highlights||[]).map(h=>`<span class="highlight-tag">${h}</span>`).join('');
+  const daysHtml = (itinerary.days||[]).map(day => {
+    const activitiesHtml = (day.activities||[]).map(a => `<div class="activity-item activity-type-${(a.type||'').replace(/\|.*/,'')}">
+      <div class="activity-time">${a.time||''}</div>
+      <div class="activity-body">
+        <div class="activity-title">${a.title||''}</div>
+        <div class="activity-desc">${a.description||''}</div>
+        ${a.tips?`<div class="activity-tip">💡 ${a.tips}</div>`:''}
+        <div class="activity-meta">${a.duration?`<span>⏱ ${a.duration}</span>`:''} ${a.cost?`<span>💰 ${a.cost}</span>`:''}</div>
+      </div></div>`).join('');
+    const m = day.meals||{};
+    return `<div class="itinerary-day-card">
+      <div class="day-header">
+        <div class="day-number">Day ${day.day}</div>
+        <div><div class="day-title">${day.title||''}</div>
+          <div class="day-theme">${day.theme||''}</div>
+          ${day.date?`<div class="day-date">${day.date}</div>`:''}
+        </div>
+      </div>
+      <div class="activities-list">${activitiesHtml}</div>
+      ${(m.breakfast||m.lunch||m.dinner)?`<div class="day-meals"><span class="meals-label">🍽️ 식사</span>
+        ${m.breakfast?`<span>🌅 조식: ${m.breakfast}</span>`:''}
+        ${m.lunch?`<span>☀️ 중식: ${m.lunch}</span>`:''}
+        ${m.dinner?`<span>🌙 석식: ${m.dinner}</span>`:''}
+      </div>`:''}
+      ${day.accommodation?`<div class="day-accommodation">🏨 숙박: ${day.accommodation}</div>`:''}
+      ${day.estimated_cost?`<div class="day-cost">💳 당일 추가 비용: ${day.estimated_cost}</div>`:''}
+    </div>`;
+  }).join('');
+  const tipsHtml = (itinerary.travel_tips||[]).map(t=>`<li>${t}</li>`).join('');
+  const baggageHtml = (itinerary.baggage_reminders||[]).map(b=>`<li>${b}</li>`).join('');
+  document.getElementById('receipt-itinerary-content').innerHTML = `
+    <div class="itinerary-hero">
+      <div class="itinerary-meta">
+        <span class="itin-badge">📍 ${itinerary.destination||''}</span>
+        <span class="itin-badge">📅 ${itinerary.duration||''}일</span>
+        <span class="itin-badge">👥 ${itinerary.travel_style||''}</span>
+      </div>
+      ${confirmedHtml}
+      <div class="highlights-row">${highlightsHtml}</div>
+      ${itinerary.weather_info?`<p class="weather-info">🌤️ ${itinerary.weather_info}</p>`:''}
+    </div>
+    <div class="itinerary-days">${daysHtml}</div>
+    ${tipsHtml?`<div class="itinerary-tips-section"><h3>💡 여행 꿀팁</h3><ul>${tipsHtml}</ul></div>`:''}
+    ${baggageHtml?`<div class="itinerary-tips-section"><h3>🧳 수하물 안내</h3><ul>${baggageHtml}</ul></div>`:''}
+    ${itinerary.total_additional_cost?`<div class="itinerary-cost-summary">💳 항공+호텔 외 예상 추가 비용: <strong>${itinerary.total_additional_cost}</strong></div>`:''}`;
+  document.getElementById('receipt-itinerary-modal').classList.remove('hidden');
+}
+
+(async function initReceiptBadge() {
+  try {
+    const res = await fetch('/api/receipts/');
+    const data = await res.json();
+    updateReceiptBadge(data.count || 0);
+  } catch (e) {}
+})();
 </script>
 </body>
 </html>

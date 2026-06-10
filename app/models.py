@@ -48,3 +48,9 @@ class BookingCreate(BaseModel):
     details: Dict[str, Any]
     price: float
     currency: str = "KRW"
+
+
+class ReceiptItineraryRequest(BaseModel):
+    receipt_id: str
+    interests: List[str] = []
+    travel_style: str = "family"

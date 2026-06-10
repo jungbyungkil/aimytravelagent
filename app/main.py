@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import search, ai_chat, bookings
+from app.routers import search, ai_chat, bookings, receipts
+from dotenv import load_dotenv
 import uvicorn
+
+load_dotenv()
 
 app = FastAPI(
     title="AI Travel Agent",
@@ -23,6 +26,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(search.router,   prefix="/api/search",   tags=["search"])
 app.include_router(ai_chat.router,  prefix="/api/ai",       tags=["ai"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["bookings"])
+app.include_router(receipts.router, prefix="/api/receipts", tags=["receipts"])
 
 
 @app.get("/")

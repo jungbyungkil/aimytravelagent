@@ -1994,3 +1994,103 @@ body {
   .itin-day, .itin-card, .itin-tl-item { break-inside: avoid; }
   .itin-day-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ══════════════════════════════════════════
+   RECEIPT MANAGEMENT
+══════════════════════════════════════════ */
+.nav-pill-receipt { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; }
+.nav-pill-receipt:hover { background: linear-gradient(135deg, #d97706, #b45309); }
+
+.btn-upload { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s; }
+.btn-upload:hover { background:linear-gradient(135deg,#d97706,#b45309);transform:translateY(-1px); }
+
+.receipt-card { background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px 20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:box-shadow .2s; }
+.receipt-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.10); }
+.receipt-card-header { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px; }
+.receipt-card-left { display:flex;align-items:flex-start;gap:12px; }
+.receipt-card-right { text-align:right;flex-shrink:0; }
+.receipt-source-badge { padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0; }
+.receipt-booking-num { font-size:13px;color:var(--text-muted); }
+.receipt-destination { font-size:16px;font-weight:700;color:var(--text);margin-top:2px; }
+.receipt-amount { font-size:15px;font-weight:700;color:var(--accent);display:block; }
+.receipt-date { font-size:12px;color:var(--text-light); }
+.receipt-tags-row { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px; }
+.receipt-tag { padding:3px 10px;background:#F0FDF4;color:#16A34A;border-radius:999px;font-size:12px;font-weight:500; }
+.receipt-passengers { font-size:12px;color:var(--text-muted);margin-bottom:12px; }
+.receipt-actions { display:flex;gap:8px;flex-wrap:wrap; }
+
+.btn-receipt-detail { padding:7px 14px;background:var(--primary-light);color:var(--primary);border:none;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s; }
+.btn-receipt-detail:hover { background:var(--primary);color:#fff; }
+.btn-receipt-itinerary { padding:7px 14px;background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border:none;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s; }
+.btn-receipt-itinerary:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,58,237,.4); }
+.btn-receipt-itinerary.saved { background:linear-gradient(135deg,#059669,#047857); }
+.btn-receipt-itinerary.saved:hover { box-shadow:0 4px 12px rgba(5,150,105,.4); }
+.btn-receipt-delete { padding:7px 12px;background:#FEF2F2;color:#EF4444;border:none;border-radius:999px;font-size:13px;cursor:pointer;transition:all .2s; }
+.btn-receipt-delete:hover { background:#EF4444;color:#fff; }
+
+.receipt-detail-grid { display:flex;flex-direction:column;gap:20px; }
+.detail-section-title { font-size:14px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border); }
+.detail-flight-card,.detail-hotel-card { background:var(--bg);border-radius:12px;padding:12px 16px;margin-bottom:8px; }
+.detail-flight-route,.detail-hotel-name { font-size:15px;font-weight:700;margin-bottom:6px; }
+.detail-flight-info,.detail-hotel-info { display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text-muted); }
+.detail-flight-info span,.detail-hotel-info span { background:#fff;padding:2px 8px;border-radius:999px;border:1px solid var(--border); }
+.passengers-list { display:flex;flex-wrap:wrap;gap:8px; }
+.detail-passenger { background:var(--bg);border-radius:12px;padding:8px 12px;display:flex;gap:8px;align-items:center;font-size:13px; }
+.passenger-name { font-weight:600; }
+.passenger-type { background:var(--primary-light);color:var(--primary);padding:1px 8px;border-radius:999px;font-size:11px; }
+.passenger-ticket { color:var(--text-muted);font-size:11px; }
+.price-row { display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border); }
+.price-total { font-size:15px;font-weight:700;color:var(--accent);text-align:right;padding-top:8px; }
+
+.itinerary-options { max-width:560px;margin:0 auto; }
+.itinerary-options-desc { text-align:center;color:var(--text-muted);font-size:14px;margin-bottom:24px;line-height:1.6; }
+.options-form { display:flex;flex-direction:column;gap:20px; }
+.option-label { display:block;font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px; }
+.style-tag { padding:8px 16px;background:var(--bg);border:2px solid var(--border);border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s; }
+.style-tag.active { background:var(--primary);color:#fff;border-color:var(--primary); }
+.style-tag:hover:not(.active) { border-color:var(--primary);color:var(--primary); }
+.btn-generate-itinerary { width:100%;padding:14px;background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border:none;border-radius:18px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s; }
+.btn-generate-itinerary:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4); }
+
+.itinerary-confirmed-box { background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.8; }
+.itinerary-confirmed-box h4 { font-weight:700;color:#16A34A;margin-bottom:6px; }
+.itinerary-confirmed-box p { color:#15803D; }
+.itinerary-hero { margin-bottom:24px; }
+.itinerary-meta { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px; }
+.itin-badge { padding:5px 14px;background:var(--primary-light);color:var(--primary);border-radius:999px;font-size:13px;font-weight:600; }
+.highlights-row { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px; }
+.highlight-tag { padding:4px 12px;background:#FAF5FF;color:#7C3AED;border-radius:999px;font-size:12px;font-weight:600; }
+.weather-info { font-size:13px;color:var(--text-muted);margin-bottom:8px; }
+
+.itinerary-days { display:flex;flex-direction:column;gap:20px; }
+.itinerary-day-card { background:var(--card);border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.day-header { display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff; }
+.day-number { font-size:24px;font-weight:900;min-width:60px; }
+.day-title { font-size:16px;font-weight:700; }
+.day-theme { font-size:12px;opacity:.8;margin-top:2px; }
+.day-date { font-size:11px;opacity:.7;margin-top:2px; }
+.activities-list { padding:12px 16px;display:flex;flex-direction:column;gap:10px; }
+.activity-item { display:flex;gap:14px;padding:10px 14px;background:var(--bg);border-radius:12px;border-left:3px solid var(--border); }
+.activity-item.activity-type-공항 { border-left-color:#6366F1; }
+.activity-item.activity-type-관광 { border-left-color:#0E72CC; }
+.activity-item.activity-type-식사 { border-left-color:#F59E0B; }
+.activity-item.activity-type-교통 { border-left-color:#8B5CF6; }
+.activity-item.activity-type-쇼핑 { border-left-color:#EC4899; }
+.activity-item.activity-type-액티비티 { border-left-color:#10B981; }
+.activity-item.activity-type-숙박 { border-left-color:#F97316; }
+.activity-time { min-width:50px;font-size:13px;font-weight:700;color:var(--primary);padding-top:1px; }
+.activity-body { flex:1; }
+.activity-title { font-size:14px;font-weight:700;margin-bottom:3px; }
+.activity-desc { font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:4px; }
+.activity-tip { font-size:11px;color:#D97706;background:#FFFBEB;padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:4px; }
+.activity-meta { display:flex;gap:10px;font-size:11px;color:var(--text-light); }
+.day-meals { padding:10px 16px;background:#FFFBEB;border-top:1px solid #FEF3C7;display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#92400E; }
+.meals-label { font-weight:700; }
+.day-accommodation { padding:8px 16px;background:#F0FDF4;border-top:1px solid #BBF7D0;font-size:12px;color:#166534; }
+.day-cost { padding:8px 16px;background:#FFF7ED;border-top:1px solid #FED7AA;font-size:12px;color:#9A3412;font-weight:600; }
+.itinerary-tips-section { margin-top:20px;background:var(--card);border-radius:18px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.itinerary-tips-section h3 { font-size:15px;font-weight:700;margin-bottom:12px; }
+.itinerary-tips-section ul { padding-left:18px; }
+.itinerary-tips-section li { font-size:13px;color:var(--text-muted);margin-bottom:6px;line-height:1.5; }
+.itinerary-cost-summary { margin-top:16px;text-align:right;font-size:15px;color:var(--text-muted);padding:12px 16px;background:var(--card);border-radius:18px;box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.itinerary-cost-summary strong { color:var(--accent); }
